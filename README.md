@@ -43,6 +43,6 @@ npm run dev
 
 ## 📝 Catatan
 
-- Model `.pkl` tidak termasuk — letakkan file Anda di `backend/ai_models/`
+- Model ai tidak termasuk — letakkan file yang diberikan di `backend/ai_models/`
 - Jika model tidak ada, backend tetap berjalan dengan rule-based fallback
 - Data bersifat edukatif — bukan rekomendasi investasi resmi

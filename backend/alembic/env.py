@@ -9,18 +9,22 @@ from app.database.database import Base
 from app.models.db_models import Stock, SentimentAnalysis, Prediction, News, ChatHistory  # noqa
 
 config = context.config
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+
+# --- INI YANG KITA UBAH (JURUS PAMUNGKAS) ---
+# Masukkan link panjang Neon kamu di bawah ini (tetap pakai tanda kutip ya "")
+config.set_main_option("sqlalchemy.url", "postgresql://neondb_owner:npg_RTDg29Ezdauw@ep-broad-butterfly-ao7zw9i3.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require")
+
 if config.config_file_name:
     fileConfig(config.config_file_name)
 target_metadata = Base.metadata
 
-
 def run_migrations_offline():
-    context.configure(url=settings.DATABASE_URL, target_metadata=target_metadata,
+    # Ini juga kita ubah paksa
+    url = config.get_main_option("sqlalchemy.url")
+    context.configure(url=url, target_metadata=target_metadata,
                       literal_binds=True, dialect_opts={"paramstyle": "named"})
     with context.begin_transaction():
         context.run_migrations()
-
 
 def run_migrations_online():
     connectable = engine_from_config(
@@ -31,7 +35,6 @@ def run_migrations_online():
         context.configure(connection=conn, target_metadata=target_metadata)
         with context.begin_transaction():
             context.run_migrations()
-
 
 if context.is_offline_mode():
     run_migrations_offline()
