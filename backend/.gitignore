@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+!.env.example
+ai_models/*.pkl
+.pytest_cache/
+*.log
+.DS_Store
