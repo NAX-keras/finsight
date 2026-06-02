@@ -10,9 +10,8 @@ from app.models.db_models import Stock, SentimentAnalysis, Prediction, News, Cha
 
 config = context.config
 
-# --- INI YANG KITA UBAH (JURUS PAMUNGKAS) ---
-# Masukkan link panjang Neon kamu di bawah ini (tetap pakai tanda kutip ya "")
-config.set_main_option("sqlalchemy.url", "postgresql://neondb_owner:npg_RTDg29Ezdauw@ep-broad-butterfly-ao7zw9i3.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require")
+# UBAH KEMBALI MENJADI SEPERTI INI (Dinamis & Aman):
+config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 if config.config_file_name:
     fileConfig(config.config_file_name)

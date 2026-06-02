@@ -1,10 +1,24 @@
+# Python Environment
 venv/
 __pycache__/
 *.pyc
 *.pyo
-.env
-!.env.example
-ai_models/*.pkl
 .pytest_cache/
 *.log
+
+# Frontend (React Vite)
+node_modules/
+dist/
+.env.local
+
+# Sistem Operasi
 .DS_Store
+Thumbs.db
+
+# Konfigurasi Rahasia
+.env
+!.env.example
+
+# AI Models (PENTING!)
+ai_models/*.keras
+# ai_models/*.pkl

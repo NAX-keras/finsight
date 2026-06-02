@@ -1,19 +1,18 @@
 """
-app/core/config.py  ── FIXED v2 (Pydantic v2 Optimized)
-==========================================================================
-CHANGELOG v2:
-  ✅ FIX: Auto-generate DATABASE_URL agar selalu sinkron dengan variabel POSTGRES_*.
-  ✅ Menerapkan SettingsConfigDict standar Pydantic v2.
-  ✅ Menjadikan DATABASE_URL opsional (jika kosong, akan dirakit otomatis).
+app/core/config.py ── FIXED v4 (Secure Env Mode)
 ==========================================================================
 """
 
 from __future__ import annotations
+import os
 from functools import lru_cache
 from typing import List, Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import model_validator
+from dotenv import load_dotenv
 
+# Paksa load .env secara konsisten
+load_dotenv()
 
 class Settings(BaseSettings):
     # ── Aplikasi ────────────────────────────────────────────
@@ -26,22 +25,15 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: int = 8000
 
-    # ── Database ────────────────────────────────────────────
-    POSTGRES_USER: str = "postgres"
-    POSTGRES_PASSWORD: str = "postgres"
-    POSTGRES_HOST: str = "localhost"
-    POSTGRES_PORT: int = 5432
-    POSTGRES_DB: str = "finsight_db"
-    
-    # Dibuat Optional. Jika di .env tidak ada, akan otomatis dirakit oleh validator di bawah.
-    DATABASE_URL: Optional[str] = None
+    # ── Database (Membaca Aman dari .env) ────────────────────
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "")
 
     # ── CORS ────────────────────────────────────────────────
-    CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
+    CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173"
 
     # ── Google Gemini ────────────────────────────────────────
-    GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-1.5-flash"  # Disamakan dengan default di API kamu sebelumnya
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_MODEL: str = "gemini-1.5-flash"  
 
     # ── AI Models ───────────────────────────────────────────
     PREDICTION_MODEL_PATH: str = "ai_models/finsight_model.keras"
@@ -55,29 +47,24 @@ class Settings(BaseSettings):
         return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
 
     @model_validator(mode="after")
-    def assemble_db_connection(self) -> "Settings":
-        """
-        Jika DATABASE_URL tidak diisi di .env, rakit otomatis menggunakan 
-        kredensial POSTGRES_ yang ada agar tidak pernah out-of-sync.
-        """
+    def validate_and_fix_db_url(self) -> "Settings":
+        """Memastikan DATABASE_URL ada dan otomatis memperbaiki prefix driver."""
         if not self.DATABASE_URL:
-            self.DATABASE_URL = (
-                f"postgresql+psycopg2://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
-                f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-            )
+            raise ValueError("❌ ERROR: DATABASE_URL tidak ditemukan di file .env!")
+        
+        # Auto-fix jika link dari Neon masih menggunakan postgresql:// biasa
+        if self.DATABASE_URL.startswith("postgresql://"):
+            self.DATABASE_URL = self.DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
         return self
 
-    # Konfigurasi standar untuk Pydantic v2
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
     )
 
-
 @lru_cache()
 def get_settings() -> Settings:
     return Settings()
-
 
 settings = get_settings()
