@@ -43,7 +43,7 @@ export default function Dashboard() {
   const [stockFilter, setStockFilter] = useState("ALL");
   const [selectedNewsDetail, setSelectedNewsDetail] = useState(null);
   const [dataSource, setDataSource] = useState(
-    HAS_BACKEND ? "Menghubungkan backend" : "Fallback dummy",
+    HAS_BACKEND ? "Data: Offline" : "Data: Offline",
   );
   const [highlightedStock, setHighlightedStock] = useState("");
   const stockRefs = useRef({});
@@ -86,7 +86,7 @@ export default function Dashboard() {
         ]);
 
       if (apiStocks && Object.keys(apiStocks).length > 0) {
-        setDataSource("Backend aktif");
+        setDataSource("Data: Online");
         const allowedTickers = FB_STOCKS.map((s) => s.ticker);
         const apiStocksFiltered = Object.fromEntries(
           Object.entries(apiStocks).filter(
@@ -111,7 +111,7 @@ export default function Dashboard() {
       if (apiInsight) setInsight(apiInsight);
       if (apiIhsg) setIhsg(apiIhsg);
       if (!apiStocks || Object.keys(apiStocks).length === 0) {
-        setDataSource("Fallback dummy");
+        setDataSource("Data: Offline");
       }
       setLoadingData(false);
     })();
@@ -223,6 +223,17 @@ export default function Dashboard() {
   const newsNegatif = allNewsFlat.filter((n) => n.tag === "Negatif").length;
   const newsNetral = allNewsFlat.filter((n) => n.tag === "Netral").length;
 
+  const dominantValue = String(insight.dominant || "Netral");
+  const dominantSub = dominantValue.toLowerCase().includes("bull") || dominantValue.toLowerCase().includes("positif")
+    ? "Mayoritas sentimen pasar menunjukkan arah positif."
+    : dominantValue.toLowerCase().includes("bear") || dominantValue.toLowerCase().includes("negatif")
+      ? "Sentimen pasar menunjukkan tekanan negatif."
+      : "Sentimen pasar masih relatif stabil.";
+  const watchlistSub = "Saham dengan sentimen tertinggi hari ini.";
+  const attentionSub = insight.attention_sub && !String(insight.attention_sub).toLowerCase().includes("dataset")
+    ? insight.attention_sub
+    : "Perlu perhatian berdasarkan pergerakan pasar.";
+
   const navItems = [
     { icon: "⚡", label: "Dashboard", id: "dashboard" },
     { icon: "📰", label: "Berita", id: "news" },
@@ -253,8 +264,8 @@ export default function Dashboard() {
                 style={{
                   background: "linear-gradient(135deg,#10b981,#0891b2)",
                   borderRadius: 8,
-                  width: 30,
-                  height: 30,
+                  width: 34,
+                  height: 34,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -269,7 +280,7 @@ export default function Dashboard() {
                     width: 30,
                     height: 30,
                     borderRadius: 8,
-                    objectFit: "cover",
+                    objectFit: "contain",
                   }}
                   onError={(e) => (e.target.style.display = "none")}
                 />
@@ -280,13 +291,15 @@ export default function Dashboard() {
               style={{
                 fontSize: 9,
                 color: "#1e3a5f",
-                letterSpacing: "1.5px",
+                letterSpacing: "1.1px",
                 textTransform: "uppercase",
                 fontWeight: 700,
                 marginTop: 4,
+                lineHeight: 1.5,
+                maxWidth: 190,
               }}
             >
-              Analisis Sentimen
+              ANALISIS SENTIMEN DAN PREDIKSI SAHAM
             </div>
           </div>
 
@@ -442,10 +455,10 @@ export default function Dashboard() {
                         marginLeft: 10,
                         padding: "4px 9px",
                         borderRadius: 999,
-                        background: dataSource === "Backend aktif" ? "#dcfce7" : "#fef3c7",
-                        color: dataSource === "Backend aktif" ? "#15803d" : "#b45309",
-                        fontSize: 11,
-                        fontWeight: 800,
+                        background: dataSource === "Data: Online" ? "rgba(16,185,129,.10)" : "rgba(148,163,184,.14)",
+                        color: dataSource === "Data: Online" ? "#0f766e" : "#64748b",
+                        fontSize: 10,
+                        fontWeight: 700,
                       }}
                     >
                       <span
@@ -453,7 +466,7 @@ export default function Dashboard() {
                           width: 6,
                           height: 6,
                           borderRadius: "50%",
-                          background: dataSource === "Backend aktif" ? "#22c55e" : "#f59e0b",
+                          background: dataSource === "Data: Online" ? "#10b981" : "#94a3b8",
                         }}
                       />
                       {dataSource}
@@ -572,21 +585,21 @@ export default function Dashboard() {
                       icon: "📊",
                       label: "Sentimen Dominan",
                       value: insight.dominant,
-                      sub: insight.dominant_sub,
+                      sub: dominantSub,
                       color: "#10b981",
                     },
                     {
                       icon: "👀",
                       label: "Saham Diamati",
                       value: insight.watchlist,
-                      sub: insight.watchlist_sub,
+                      sub: watchlistSub,
                       color: "#38bdf8",
                     },
                     {
                       icon: "⚡",
                       label: "Perlu Diperhatikan",
                       value: insight.attention,
-                      sub: insight.attention_sub,
+                      sub: attentionSub,
                       color: "#f59e0b",
                     },
                   ].map((item) => (
@@ -1026,6 +1039,122 @@ export default function Dashboard() {
                   </ResponsiveContainer>
                 </div>
               </div>
+
+              {/* Keyword Trending */}
+              <div
+                className="fade-up-5"
+                style={{
+                  background: "#fff",
+                  borderRadius: 20,
+                  padding: "22px 24px",
+                  boxShadow: "0 1px 4px rgba(0,0,0,.07)",
+                  border: "1px solid #e2e8f0",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 12,
+                    marginBottom: 14,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div>
+                    <div
+                      style={{
+                        fontFamily: "'Syne',sans-serif",
+                        fontWeight: 800,
+                        fontSize: 17,
+                        color: "#0f172a",
+                      }}
+                    >
+                      🔤 Keyword Trending
+                    </div>
+                    <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>
+                      Kata kunci yang sering muncul dalam berita dan sentimen pasar
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActivePage("news")}
+                    style={{
+                      border: "none",
+                      background: "#dcfce7",
+                      color: "#15803d",
+                      borderRadius: 999,
+                      padding: "9px 14px",
+                      fontSize: 12,
+                      fontWeight: 800,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Lihat Berita →
+                  </button>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  {keywords.map((k) => (
+                    <span
+                      key={k.word}
+                      style={{
+                        fontSize: k.size,
+                        fontWeight: k.weight,
+                        color: k.color,
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {k.word}
+                    </span>
+                  ))}
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                    gap: 12,
+                    marginTop: 18,
+                  }}
+                  className="keyword-summary-grid"
+                >
+                  {[
+                    { value: `${insight.bullish_pct || 0}%`, label: "Bullish Signal", bg: "#dcfce7", color: "#15803d" },
+                    { value: `${insight.bearish_pct || 0}%`, label: "Bearish Signal", bg: "#fee2e2", color: "#dc2626" },
+                    { value: `${insight.neutral_pct || 0}%`, label: "Netral", bg: "#f1f5f9", color: "#64748b" },
+                  ].map((item) => (
+                    <div
+                      key={item.label}
+                      style={{
+                        background: item.bg,
+                        borderRadius: 14,
+                        padding: "14px 16px",
+                        textAlign: "center",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontFamily: "'Syne',sans-serif",
+                          fontWeight: 900,
+                          color: item.color,
+                          fontSize: 22,
+                        }}
+                      >
+                        {item.value}
+                      </div>
+                      <div style={{ color: item.color, fontSize: 12, fontWeight: 700, marginTop: 4 }}>
+                        {item.label}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
           {/* ════ BERITA PAGE ════ */}
@@ -1333,7 +1462,7 @@ export default function Dashboard() {
                       key={n.id}
                       type="button"
                       onClick={() => setSelectedNewsDetail(n)}
-                      className="card-hover news-row"
+                      className="card-hover news-row news-card-main"
                       style={{
                         background: "#fff",
                         borderRadius: 20,
@@ -1343,9 +1472,14 @@ export default function Dashboard() {
                         cursor: "pointer",
                         textAlign: "left",
                         fontFamily: "inherit",
+                        width: "100%",
+                        maxWidth: "100%",
+                        minWidth: 0,
+                        overflow: "hidden",
                       }}
                     >
                       <div
+                        className="news-card-header"
                         style={{
                           display: "flex",
                           alignItems: "center",
@@ -1356,7 +1490,7 @@ export default function Dashboard() {
                           borderBottom: "1px solid #f1f5f9",
                         }}
                       >
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                        <div className="news-card-stock" style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                           <div
                             style={{
                               width: 44,
@@ -1388,6 +1522,7 @@ export default function Dashboard() {
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
                                 maxWidth: 260,
+                                overflowWrap: "anywhere",
                               }}
                             >
                               {n.stockName}
@@ -1397,7 +1532,7 @@ export default function Dashboard() {
                             </div>
                           </div>
                         </div>
-                        <div style={{ textAlign: "right", flexShrink: 0 }}>
+                        <div className="news-card-price" style={{ textAlign: "right", flexShrink: 0 }}>
                           <div style={{ fontWeight: 800, fontSize: 14, color: "#0f172a" }}>
                             Rp {n.price}
                           </div>
@@ -1415,6 +1550,7 @@ export default function Dashboard() {
                       </div>
 
                       <div
+                        className="news-card-body"
                         style={{
                           display: "flex",
                           alignItems: "flex-start",
@@ -1441,6 +1577,8 @@ export default function Dashboard() {
                               WebkitLineClamp: 2,
                               WebkitBoxOrient: "vertical",
                               overflow: "hidden",
+                              overflowWrap: "anywhere",
+                              wordBreak: "break-word",
                             }}
                           >
                             {n.title}
@@ -1450,6 +1588,7 @@ export default function Dashboard() {
                           </div>
                         </div>
                         <span
+                          className="news-sentiment-pill"
                           style={{
                             fontSize: 11,
                             fontWeight: 800,

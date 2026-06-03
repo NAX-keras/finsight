@@ -84,4 +84,20 @@ export const globalCSS = `
     .grid-4 { grid-template-columns: repeat(4, 1fr); gap: 18px; }
     .grid-chart { grid-template-columns: 2fr 1fr; gap: 18px; }
   }
+
+  .news-card-main { width: 100%; max-width: 100%; min-width: 0; overflow: hidden; }
+  .news-card-body { min-width: 0; max-width: 100%; }
+  .keyword-summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+  @media (max-width: 767px) {
+    .sidebar-logo-container img { object-fit: contain !important; }
+    .news-card-main { padding: 16px !important; }
+    .news-card-header { align-items: flex-start !important; gap: 12px !important; }
+    .news-card-stock { min-width: 0 !important; flex: 1 1 auto !important; }
+    .news-card-price { text-align: left !important; }
+    .news-card-body { display: grid !important; grid-template-columns: 8px minmax(0, 1fr); column-gap: 10px !important; row-gap: 8px; }
+    .news-sentiment-pill { grid-column: 2; justify-self: start; margin-top: 2px; }
+    .keyword-summary-grid { grid-template-columns: 1fr !important; }
+  }
+
 `;

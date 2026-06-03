@@ -1418,11 +1418,11 @@ export const FB_NEWS = {
 };
 export const FB_INSIGHT = {
   "dominant": "Netral",
-  "dominant_sub": "15 saham memakai dataset harga 2 tahun & sentimen tweet",
+  "dominant_sub": "Sentimen pasar masih relatif stabil.",
   "watchlist": "TPIA, BBRI, BYAN",
-  "watchlist_sub": "Skor sentimen tertinggi pada dataset",
+  "watchlist_sub": "Saham dengan sentimen tertinggi hari ini.",
   "attention": "BBNI & BREN",
-  "attention_sub": "Perlu perhatian dari skor sentimen/teknikal",
+  "attention_sub": "Perlu perhatian berdasarkan pergerakan pasar.",
   "bullish_pct": 7,
   "bearish_pct": 7,
   "neutral_pct": 87
