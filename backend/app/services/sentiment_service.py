@@ -1,12 +1,3 @@
-"""
-app/services/sentiment_service.py
-SentimentService:
-  - load_model()   : load sentiment_model.pkl (scikit-learn pipeline)
-  - analyze_text() : inferensi → {label, score}
-  - save_result()  : simpan ke tabel sentiment_analysis
-
-Jika file .pkl tidak ada atau gagal load → rule-based fallback otomatis.
-"""
 from __future__ import annotations
 import os, re
 from typing import Optional, Tuple
@@ -29,7 +20,6 @@ _NEG = {
     "pesimis","defisit","loss","shortfall",
 }
 
-
 def _rule_based(text: str) -> Tuple[str, float]:
     words = re.findall(r"\b\w+\b", text.lower())
     pos = sum(1 for w in words if w in _POS)
@@ -40,13 +30,11 @@ def _rule_based(text: str) -> Tuple[str, float]:
     label = "positive" if score >= 60 else ("negative" if score <= 40 else "neutral")
     return label, score
 
-
 def _normalise_label(raw: str) -> str:
     r = str(raw).lower().strip()
     if r in ("positive","positif","pos","1","bullish","label_positive"): return "positive"
     if r in ("negative","negatif","neg","0","bearish","label_negative"): return "negative"
     return "neutral"
-
 
 def _proba_to_score(label: str, proba: Optional[list]) -> float:
     if proba:
@@ -56,7 +44,6 @@ def _proba_to_score(label: str, proba: Optional[list]) -> float:
         except (IndexError, TypeError):
             pass
     return {"positive": 75.0, "neutral": 50.0, "negative": 25.0}.get(label, 50.0)
-
 
 # ── Service ──────────────────────────────────────────────────────────────────
 
@@ -75,12 +62,13 @@ class SentimentService:
             logger.info("   → Rule-based fallback aktif.")
             return
         try:
-            import joblib
-            self._model = joblib.load(path)
+            # HANYA UBAH DI SINI: joblib -> tensorflow.keras
+            from tensorflow.keras.models import load_model
+            self._model = load_model(path, compile=False)
             self._loaded = True
-            logger.info(f"✅ Sentiment model dimuat: {path}")
+            logger.info(f"✅ Keras sentiment model dimuat: {path}")
         except Exception as e:
-            logger.error(f"❌ Gagal load sentiment model: {e}")
+            logger.error(f"❌ Gagal load Keras sentiment model: {e}")
             logger.info("   → Rule-based fallback aktif.")
 
     @property
@@ -96,16 +84,27 @@ class SentimentService:
             return {"label": label, "score": score, "source": "rule_based"}
 
         try:
-            raw   = self._model.predict([text])[0]
-            label = _normalise_label(str(raw))
-            try:
-                proba = self._model.predict_proba([text])[0].tolist()
-            except AttributeError:
-                proba = None
-            score = _proba_to_score(label, proba)
-            return {"label": label, "score": score, "source": "sklearn"}
+            import numpy as np
+            # Keras butuh input dalam format array
+            input_data = np.array([text])
+            predictions = self._model.predict(input_data, verbose=0)[0]
+            
+            # Penyesuaian output Keras ke format Vercel
+            if len(predictions) >= 3:
+                class_idx = int(np.argmax(predictions))
+                mapping = {0: "negative", 1: "neutral", 2: "positive"}
+                label = mapping.get(class_idx, "neutral")
+                score = round(float(predictions[class_idx]) * 100, 1)
+            else:
+                prob = float(predictions[0])
+                score = round(prob * 100, 1)
+                label = "positive" if score >= 60 else ("negative" if score <= 40 else "neutral")
+
+            # Format respons ini 100% sama dengan aslinya, Vercel aman!
+            return {"label": label, "score": score, "source": "keras"}
+            
         except Exception as e:
-            logger.warning(f"Sklearn inference gagal ({e}), pakai fallback.")
+            logger.warning(f"Keras inference gagal ({e}), pakai fallback.")
             label, score = _rule_based(text)
             return {"label": label, "score": score, "source": "rule_based"}
 
