@@ -1,13 +1,3 @@
-/**
- * Dashboard.jsx — FinSight Frontend (FIXED + RESPONSIVE)
- *
- * PERUBAHAN DARI VERSI LAMA:
- * 1. ✅ Terhubung ke backend via API
- * 2. ✅ AI Chat menggunakan proxy /api/chat
- * 3. ✅ Semua data dinamis (Saham, IHSG, Berita, Prediksi)
- * 4. 📱 Ditambahkan Media Queries untuk responsivitas Mobile/HP & Desktop
- */
-
 import { useState, useEffect, useRef } from "react";
 import {
   AreaChart,
@@ -481,7 +471,6 @@ const eduContent = [
     ],
   },
 ];
-
 /* ── HELPERS ─────────────────────────────────────────────────── */
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -533,13 +522,19 @@ function getTodayId() {
 
 /* ── AI CHAT PAGE ────────────────────────────────────────────── */
 const AI_SYSTEM = `Kamu adalah FinSight AI, asisten cerdas untuk platform analisis sentimen saham FinSight.`;
-const QUICK_CHIPS = ["Apa sentimen BBRI?", "Jelaskan Bullish", "Tips pemula", "Kenapa GOTO turun?"];
+const QUICK_CHIPS = [
+  "Apa sentimen BBRI?",
+  "Jelaskan Bullish",
+  "Tips pemula",
+  "Kenapa GOTO turun?",
+];
 
 function AIPage() {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      content: "Halo! Saya **FinSight AI** 👋\n\nSaya siap bantu kamu memahami pasar saham. Mau tanya apa?",
+      content:
+        "Halo! Saya **FinSight AI** 👋\n\nSaya siap bantu kamu memahami pasar saham. Mau tanya apa?",
     },
   ]);
   const [input, setInput] = useState("");
@@ -589,10 +584,19 @@ function AIPage() {
     }
   };
 
-  const formatMsg = (text) => text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br/>");
+  const formatMsg = (text) =>
+    text
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\n/g, "<br/>");
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 120px)" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "calc(100vh - 120px)",
+      }}
+    >
       <div className="fade-up" style={{ marginBottom: 20 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div
@@ -610,11 +614,35 @@ function AIPage() {
             🤖
           </div>
           <div>
-            <h1 style={{ fontFamily: "'Syne',sans-serif", fontSize: 22, fontWeight: 800, color: "#0f172a", margin: 0 }}>
+            <h1
+              style={{
+                fontFamily: "'Syne',sans-serif",
+                fontSize: 22,
+                fontWeight: 800,
+                color: "#0f172a",
+                margin: 0,
+              }}
+            >
               FinSight AI
             </h1>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#10b981", animation: "pulse-dot 1.5s infinite", display: "inline-block" }} />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                marginTop: 2,
+              }}
+            >
+              <span
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  background: "#10b981",
+                  animation: "pulse-dot 1.5s infinite",
+                  display: "inline-block",
+                }}
+              />
               <span style={{ fontSize: 12, color: "#10b981", fontWeight: 600 }}>
                 {HAS_BACKEND ? "Online · Siap membantu" : "Offline"}
               </span>
@@ -623,40 +651,208 @@ function AIPage() {
         </div>
       </div>
 
-      <div className="fade-up-1" style={{ flex: 1, background: "#fff", borderRadius: 20, boxShadow: "0 1px 4px rgba(0,0,0,.07)", display: "flex", flexDirection: "column", overflow: "hidden", border: "1px solid #f1f5f9" }}>
+      <div
+        className="fade-up-1"
+        style={{
+          flex: 1,
+          background: "#fff",
+          borderRadius: 20,
+          boxShadow: "0 1px 4px rgba(0,0,0,.07)",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          border: "1px solid #f1f5f9",
+        }}
+      >
         <div style={{ flex: 1, overflowY: "auto", padding: "24px 24px 12px" }}>
           {messages.map((m, i) => (
-            <div key={i} style={{ display: "flex", gap: 12, marginBottom: 20, flexDirection: m.role === "user" ? "row-reverse" : "row" }}>
-              <div style={{ width: 34, height: 34, borderRadius: "50%", flexShrink: 0, background: m.role === "assistant" ? "linear-gradient(135deg,#10b981,#0891b2)" : "linear-gradient(135deg,#6366f1,#8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, marginTop: 2 }}>
+            <div
+              key={i}
+              style={{
+                display: "flex",
+                gap: 12,
+                marginBottom: 20,
+                flexDirection: m.role === "user" ? "row-reverse" : "row",
+              }}
+            >
+              <div
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: "50%",
+                  flexShrink: 0,
+                  background:
+                    m.role === "assistant"
+                      ? "linear-gradient(135deg,#10b981,#0891b2)"
+                      : "linear-gradient(135deg,#6366f1,#8b5cf6)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 16,
+                  marginTop: 2,
+                }}
+              >
                 {m.role === "assistant" ? "🤖" : "👤"}
               </div>
-              <div style={{ maxWidth: "85%", padding: "12px 16px", borderRadius: m.role === "user" ? "18px 4px 18px 18px" : "4px 18px 18px 18px", background: m.role === "user" ? "linear-gradient(135deg,#0f172a,#1e3a5f)" : "#f8fafc", color: m.role === "user" ? "#fff" : "#334155", fontSize: 13, lineHeight: 1.7, border: m.role === "assistant" ? "1px solid #f1f5f9" : "none", boxShadow: m.role === "user" ? "0 4px 16px rgba(15,23,41,.2)" : "0 1px 4px rgba(0,0,0,.04)" }} dangerouslySetInnerHTML={{ __html: formatMsg(m.content) }} />
+              <div
+                style={{
+                  maxWidth: "85%",
+                  padding: "12px 16px",
+                  borderRadius:
+                    m.role === "user"
+                      ? "18px 4px 18px 18px"
+                      : "4px 18px 18px 18px",
+                  background:
+                    m.role === "user"
+                      ? "linear-gradient(135deg,#0f172a,#1e3a5f)"
+                      : "#f8fafc",
+                  color: m.role === "user" ? "#fff" : "#334155",
+                  fontSize: 13,
+                  lineHeight: 1.7,
+                  border: m.role === "assistant" ? "1px solid #f1f5f9" : "none",
+                  boxShadow:
+                    m.role === "user"
+                      ? "0 4px 16px rgba(15,23,41,.2)"
+                      : "0 1px 4px rgba(0,0,0,.04)",
+                }}
+                dangerouslySetInnerHTML={{ __html: formatMsg(m.content) }}
+              />
             </div>
           ))}
           {loading && (
             <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
-              <div style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg,#10b981,#0891b2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🤖</div>
-              <div style={{ padding: "14px 18px", borderRadius: "4px 18px 18px 18px", background: "#f8fafc", border: "1px solid #f1f5f9", display: "flex", gap: 5, alignItems: "center" }}>
-                <span className="dot1" style={{ width: 7, height: 7, borderRadius: "50%", background: "#10b981", display: "inline-block" }} />
-                <span className="dot2" style={{ width: 7, height: 7, borderRadius: "50%", background: "#10b981", display: "inline-block" }} />
-                <span className="dot3" style={{ width: 7, height: 7, borderRadius: "50%", background: "#10b981", display: "inline-block" }} />
+              <div
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg,#10b981,#0891b2)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 16,
+                }}
+              >
+                🤖
+              </div>
+              <div
+                style={{
+                  padding: "14px 18px",
+                  borderRadius: "4px 18px 18px 18px",
+                  background: "#f8fafc",
+                  border: "1px solid #f1f5f9",
+                  display: "flex",
+                  gap: 5,
+                  alignItems: "center",
+                }}
+              >
+                <span
+                  className="dot1"
+                  style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: "50%",
+                    background: "#10b981",
+                    display: "inline-block",
+                  }}
+                />
+                <span
+                  className="dot2"
+                  style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: "50%",
+                    background: "#10b981",
+                    display: "inline-block",
+                  }}
+                />
+                <span
+                  className="dot3"
+                  style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: "50%",
+                    background: "#10b981",
+                    display: "inline-block",
+                  }}
+                />
               </div>
             </div>
           )}
           <div ref={bottomRef} />
         </div>
         {messages.length <= 1 && (
-          <div style={{ padding: "0 24px 14px", display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <div
+            style={{
+              padding: "0 24px 14px",
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
             {QUICK_CHIPS.map((c) => (
-              <button key={c} className="chip" onClick={() => sendMessage(c)} style={{ background: "rgba(16,185,129,.08)", border: "1px solid rgba(16,185,129,.25)", color: "#0f172a", fontSize: 12, fontWeight: 600, padding: "6px 14px", borderRadius: 20 }}>
+              <button
+                key={c}
+                className="chip"
+                onClick={() => sendMessage(c)}
+                style={{
+                  background: "rgba(16,185,129,.08)",
+                  border: "1px solid rgba(16,185,129,.25)",
+                  color: "#0f172a",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  padding: "6px 14px",
+                  borderRadius: 20,
+                }}
+              >
                 {c}
               </button>
             ))}
           </div>
         )}
-        <div style={{ padding: "14px 20px", borderTop: "1px solid #f1f5f9", display: "flex", gap: 10, background: "#fff" }}>
-          <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()} placeholder="Tanya sesuatu..." disabled={loading} style={{ flex: 1, border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "11px 16px", fontSize: 13, outline: "none", background: "#f8fafc", color: "#0f172a", fontFamily: "inherit" }} />
-          <button className="ai-send" onClick={() => sendMessage()} disabled={loading || !input.trim()} style={{ background: "#10b981", color: "#fff", border: "none", borderRadius: 12, padding: "11px 20px", fontWeight: 700, fontSize: 13, cursor: loading ? "not-allowed" : "pointer", opacity: loading || !input.trim() ? 0.6 : 1 }}>
+        <div
+          style={{
+            padding: "14px 20px",
+            borderTop: "1px solid #f1f5f9",
+            display: "flex",
+            gap: 10,
+            background: "#fff",
+          }}
+        >
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
+            placeholder="Tanya sesuatu..."
+            disabled={loading}
+            style={{
+              flex: 1,
+              border: "1.5px solid #e2e8f0",
+              borderRadius: 12,
+              padding: "11px 16px",
+              fontSize: 13,
+              outline: "none",
+              background: "#f8fafc",
+              color: "#0f172a",
+              fontFamily: "inherit",
+            }}
+          />
+          <button
+            className="ai-send"
+            onClick={() => sendMessage()}
+            disabled={loading || !input.trim()}
+            style={{
+              background: "#10b981",
+              color: "#fff",
+              border: "none",
+              borderRadius: 12,
+              padding: "11px 20px",
+              fontWeight: 700,
+              fontSize: 13,
+              cursor: loading ? "not-allowed" : "pointer",
+              opacity: loading || !input.trim() ? 0.6 : 1,
+            }}
+          >
             Kirim
           </button>
         </div>
@@ -667,51 +863,209 @@ function AIPage() {
 
 /* ── SETTINGS PAGE ───────────────────────────────────────────── */
 function SettingsPage({ stocks }) {
-  const [notif, setNotif] = useState({ insight: true, alert: true, berita: false, prediksi: true });
+  const [notif, setNotif] = useState({
+    insight: true,
+    alert: true,
+    berita: false,
+    prediksi: true,
+  });
   const toggleNotif = (k) => setNotif((p) => ({ ...p, [k]: !p[k] }));
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
       <div className="fade-up">
-        <h1 style={{ fontFamily: "'Syne',sans-serif", fontSize: 24, fontWeight: 800, color: "#0f172a", margin: 0 }}>⚙️ Pengaturan</h1>
-        <p style={{ color: "#64748b", fontSize: 13, margin: "4px 0 0" }}>Kelola preferensi aplikasi FinSight kamu</p>
+        <h1
+          style={{
+            fontFamily: "'Syne',sans-serif",
+            fontSize: 24,
+            fontWeight: 800,
+            color: "#0f172a",
+            margin: 0,
+          }}
+        >
+          ⚙️ Pengaturan
+        </h1>
+        <p style={{ color: "#64748b", fontSize: 13, margin: "4px 0 0" }}>
+          Kelola preferensi aplikasi FinSight kamu
+        </p>
       </div>
 
-      <div className="fade-up-1" style={{ background: "#fff", borderRadius: 20, padding: "24px 26px", boxShadow: "0 1px 4px rgba(0,0,0,.07)" }}>
-        <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 15, color: "#0f172a", marginBottom: 18 }}>📈 Saham Dipantau</div>
+      <div
+        className="fade-up-1"
+        style={{
+          background: "#fff",
+          borderRadius: 20,
+          padding: "24px 26px",
+          boxShadow: "0 1px 4px rgba(0,0,0,.07)",
+        }}
+      >
+        <div
+          style={{
+            fontFamily: "'Syne',sans-serif",
+            fontWeight: 800,
+            fontSize: 15,
+            color: "#0f172a",
+            marginBottom: 18,
+          }}
+        >
+          📈 Saham Dipantau
+        </div>
         <div className="grid-2">
           {stocks.map((s) => (
-            <div key={s.ticker} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 12, background: "#f8fafc", border: "1px solid #f1f5f9" }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: s.up ? "#dcfce7" : "#fee2e2", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Syne',sans-serif", fontWeight: 900, fontSize: 11, color: s.up ? "#15803d" : "#dc2626", flexShrink: 0, border: `1.5px solid ${s.up ? "#86efac" : "#fca5a5"}` }}>{s.ticker}</div>
+            <div
+              key={s.ticker}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "12px 16px",
+                borderRadius: 12,
+                background: "#f8fafc",
+                border: "1px solid #f1f5f9",
+              }}
+            >
+              <div
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 10,
+                  background: s.up ? "#dcfce7" : "#fee2e2",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontFamily: "'Syne',sans-serif",
+                  fontWeight: 900,
+                  fontSize: 11,
+                  color: s.up ? "#15803d" : "#dc2626",
+                  flexShrink: 0,
+                  border: `1.5px solid ${s.up ? "#86efac" : "#fca5a5"}`,
+                }}
+              >
+                {s.ticker}
+              </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700, fontSize: 13, color: "#0f172a" }}>{s.name}</div>
-                <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>{s.sector}</div>
+                <div
+                  style={{ fontWeight: 700, fontSize: 13, color: "#0f172a" }}
+                >
+                  {s.name}
+                </div>
+                <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>
+                  {s.sector}
+                </div>
               </div>
               <div style={{ textAlign: "right", flexShrink: 0 }}>
-                <div style={{ fontWeight: 800, fontSize: 13, color: "#0f172a" }}>Rp {s.price}</div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: s.up ? "#10b981" : "#ef4444" }}>{s.change}</div>
+                <div
+                  style={{ fontWeight: 800, fontSize: 13, color: "#0f172a" }}
+                >
+                  Rp {s.price}
+                </div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: s.up ? "#10b981" : "#ef4444",
+                  }}
+                >
+                  {s.change}
+                </div>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="fade-up-2" style={{ background: "#fff", borderRadius: 20, padding: "24px 26px", boxShadow: "0 1px 4px rgba(0,0,0,.07)" }}>
-        <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 15, color: "#0f172a", marginBottom: 18 }}>🔔 Notifikasi</div>
+      <div
+        className="fade-up-2"
+        style={{
+          background: "#fff",
+          borderRadius: 20,
+          padding: "24px 26px",
+          boxShadow: "0 1px 4px rgba(0,0,0,.07)",
+        }}
+      >
+        <div
+          style={{
+            fontFamily: "'Syne',sans-serif",
+            fontWeight: 800,
+            fontSize: 15,
+            color: "#0f172a",
+            marginBottom: 18,
+          }}
+        >
+          🔔 Notifikasi
+        </div>
         <div className="grid-2">
           {[
-            { key: "insight", label: "Insight Harian", sub: "Terima ringkasan sentimen pagi" },
-            { key: "alert", label: "Alert Sentimen", sub: "Saat sentimen berubah drastis" },
-            { key: "berita", label: "Berita Penting", sub: "Berita yang mempengaruhi saham" },
-            { key: "prediksi", label: "Update Prediksi", sub: "Saat prediksi arah diperbarui" },
+            {
+              key: "insight",
+              label: "Insight Harian",
+              sub: "Terima ringkasan sentimen pagi",
+            },
+            {
+              key: "alert",
+              label: "Alert Sentimen",
+              sub: "Saat sentimen berubah drastis",
+            },
+            {
+              key: "berita",
+              label: "Berita Penting",
+              sub: "Berita yang mempengaruhi saham",
+            },
+            {
+              key: "prediksi",
+              label: "Update Prediksi",
+              sub: "Saat prediksi arah diperbarui",
+            },
           ].map((n) => (
-            <div key={n.key} onClick={() => toggleNotif(n.key)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderRadius: 12, background: "#f8fafc", border: `1px solid ${notif[n.key] ? "#bbf7d0" : "#f1f5f9"}`, cursor: "pointer", transition: "border .2s" }}>
+            <div
+              key={n.key}
+              onClick={() => toggleNotif(n.key)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "14px 16px",
+                borderRadius: 12,
+                background: "#f8fafc",
+                border: `1px solid ${notif[n.key] ? "#bbf7d0" : "#f1f5f9"}`,
+                cursor: "pointer",
+                transition: "border .2s",
+              }}
+            >
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{n.label}</div>
-                <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 3 }}>{n.sub}</div>
+                <div
+                  style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}
+                >
+                  {n.label}
+                </div>
+                <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 3 }}>
+                  {n.sub}
+                </div>
               </div>
-              <div style={{ width: 46, height: 26, borderRadius: 13, background: notif[n.key] ? "#10b981" : "#e2e8f0", position: "relative", flexShrink: 0, transition: "background .25s" }}>
-                <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: notif[n.key] ? 23 : 3, transition: "left .25s", boxShadow: "0 1px 4px rgba(0,0,0,.25)" }} />
+              <div
+                style={{
+                  width: 46,
+                  height: 26,
+                  borderRadius: 13,
+                  background: notif[n.key] ? "#10b981" : "#e2e8f0",
+                  position: "relative",
+                  flexShrink: 0,
+                  transition: "background .25s",
+                }}
+              >
+                <div
+                  style={{
+                    width: 20,
+                    height: 20,
+                    borderRadius: "50%",
+                    background: "#fff",
+                    position: "absolute",
+                    top: 3,
+                    left: notif[n.key] ? 23 : 3,
+                    transition: "left .25s",
+                    boxShadow: "0 1px 4px rgba(0,0,0,.25)",
+                  }}
+                />
               </div>
             </div>
           ))}
@@ -733,7 +1087,11 @@ export default function Dashboard() {
   const [sentimentHistory, setSentimentHistory] = useState(FB_SENT_HIST);
   const [newsData, setNewsData] = useState(FB_NEWS);
   const [insight, setInsight] = useState(FB_INSIGHT);
-  const [ihsg, setIhsg] = useState({ formatted: "7.412", change_str: "+0.64%", up: true });
+  const [ihsg, setIhsg] = useState({
+    formatted: "7.412",
+    change_str: "+0.64%",
+    up: true,
+  });
   const [loadingData, setLoadingData] = useState(false);
 
   const [sentimentFilter, setSentimentFilter] = useState("Semua");
@@ -743,9 +1101,14 @@ export default function Dashboard() {
     if (!HAS_BACKEND) return;
     (async () => {
       setLoadingData(true);
-      const [apiStocks, apiSentHist, apiNews, apiInsight, apiIhsg] = await Promise.all([
-        apiFetch("/stocks"), apiFetch("/sentiment/history"), apiFetch("/news"), apiFetch("/insight/daily"), apiFetch("/insight/ihsg"),
-      ]);
+      const [apiStocks, apiSentHist, apiNews, apiInsight, apiIhsg] =
+        await Promise.all([
+          apiFetch("/stocks"),
+          apiFetch("/sentiment/history"),
+          apiFetch("/news"),
+          apiFetch("/insight/daily"),
+          apiFetch("/insight/ihsg"),
+        ]);
 
       if (apiStocks && Object.keys(apiStocks).length > 0) {
         const tickers = Object.keys(apiStocks);
@@ -754,7 +1117,8 @@ export default function Dashboard() {
         setNewsData(mapApiToNewsDict(apiNews || [], tickers));
         setStockFilter(tickers[0] || "BBRI");
       }
-      if (apiSentHist && apiSentHist.length > 0) setSentimentHistory(apiSentHist);
+      if (apiSentHist && apiSentHist.length > 0)
+        setSentimentHistory(apiSentHist);
       if (apiInsight) setInsight(apiInsight);
       if (apiIhsg) setIhsg(apiIhsg);
       setLoadingData(false);
@@ -764,10 +1128,21 @@ export default function Dashboard() {
   useEffect(() => {
     if (!HAS_BACKEND || !activeStock) return;
     (async () => {
-      const [pred, sent] = await Promise.all([apiFetch(`/predict/${activeStock}`), apiFetch(`/sentiment/${activeStock}`)]);
+      const [pred, sent] = await Promise.all([
+        apiFetch(`/predict/${activeStock}`),
+        apiFetch(`/sentiment/${activeStock}`),
+      ]);
       if (pred) {
         setStocks((prev) =>
-          prev.map((s) => s.ticker !== activeStock ? s : { ...s, prediction: SIG_TO_ID[pred.signal] || s.prediction, predColor: SIG_COLOR[pred.signal] || s.predColor })
+          prev.map((s) =>
+            s.ticker !== activeStock
+              ? s
+              : {
+                  ...s,
+                  prediction: SIG_TO_ID[pred.signal] || s.prediction,
+                  predColor: SIG_COLOR[pred.signal] || s.predColor,
+                },
+          ),
         );
       }
       if (sent && sent.history) setSentimentHistory(sent.history);
@@ -790,11 +1165,24 @@ export default function Dashboard() {
     }
   };
 
-  const stock = stocks.find((s) => s.ticker === activeStock) || stocks[0] || FB_STOCKS[0];
-  const sentColor = stock.sentiment >= 60 ? "#10b981" : stock.sentiment >= 40 ? "#f59e0b" : "#ef4444";
-  const predArrow = stock.prediction === "Naik" ? "↑" : stock.prediction === "Turun" ? "↓" : "→";
+  const stock =
+    stocks.find((s) => s.ticker === activeStock) || stocks[0] || FB_STOCKS[0];
+  const sentColor =
+    stock.sentiment >= 60
+      ? "#10b981"
+      : stock.sentiment >= 40
+        ? "#f59e0b"
+        : "#ef4444";
+  const predArrow =
+    stock.prediction === "Naik"
+      ? "↑"
+      : stock.prediction === "Turun"
+        ? "↓"
+        : "→";
 
-  const newsForStock = (newsData[stockFilter] || []).filter((n) => sentimentFilter === "Semua" || n.tag === sentimentFilter);
+  const newsForStock = (newsData[stockFilter] || []).filter(
+    (n) => sentimentFilter === "Semua" || n.tag === sentimentFilter,
+  );
 
   const allNewsFlat = Object.values(newsData).flat();
   const newsTotal = allNewsFlat.length;
@@ -817,13 +1205,54 @@ export default function Dashboard() {
         {/* ── SIDEBAR RESPONSIVE ── */}
         <aside className="sidebar">
           <div className="sidebar-logo-container">
-            <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 19, fontWeight: 800, color: "#fff", display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ background: "linear-gradient(135deg,#10b981,#0891b2)", borderRadius: 8, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>
-                <img src="/logo.jpeg" alt="Logo" style={{ width: 30, height: 30, borderRadius: 8, objectFit: "cover" }} onError={(e) => e.target.style.display='none'} />
+            <div
+              style={{
+                fontFamily: "'Syne',sans-serif",
+                fontSize: 19,
+                fontWeight: 800,
+                color: "#fff",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              <span
+                style={{
+                  background: "linear-gradient(135deg,#10b981,#0891b2)",
+                  borderRadius: 8,
+                  width: 30,
+                  height: 30,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 14,
+                  flexShrink: 0,
+                }}
+              >
+                <img
+                  src="/logo.jpeg"
+                  alt="Logo"
+                  style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: 8,
+                    objectFit: "cover",
+                  }}
+                  onError={(e) => (e.target.style.display = "none")}
+                />
               </span>
               FinSight
             </div>
-            <div style={{ fontSize: 9, color: "#1e3a5f", letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: 700, marginTop: 4 }}>
+            <div
+              style={{
+                fontSize: 9,
+                color: "#1e3a5f",
+                letterSpacing: "1.5px",
+                textTransform: "uppercase",
+                fontWeight: 700,
+                marginTop: 4,
+              }}
+            >
               Analisis Sentimen
             </div>
           </div>
@@ -832,7 +1261,33 @@ export default function Dashboard() {
             {navItems.map(({ icon, label, id }) => {
               const active = activePage === id;
               return (
-                <div key={id} className="nav-item" onClick={() => setActivePage(id)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 10, cursor: "pointer", background: active ? "rgba(16,185,129,.15)" : "transparent", color: active ? "#10b981" : "#475569", fontWeight: active ? 700 : 500, fontSize: 13, borderBottom: window.innerWidth < 768 && active ? "3px solid #10b981" : "3px solid transparent", borderLeft: window.innerWidth >= 768 && active ? "3px solid #10b981" : window.innerWidth >= 768 ? "3px solid transparent" : "none" }}>
+                <div
+                  key={id}
+                  className="nav-item"
+                  onClick={() => setActivePage(id)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "10px 12px",
+                    borderRadius: 10,
+                    cursor: "pointer",
+                    background: active ? "rgba(16,185,129,.15)" : "transparent",
+                    color: active ? "#10b981" : "#475569",
+                    fontWeight: active ? 700 : 500,
+                    fontSize: 13,
+                    borderBottom:
+                      window.innerWidth < 768 && active
+                        ? "3px solid #10b981"
+                        : "3px solid transparent",
+                    borderLeft:
+                      window.innerWidth >= 768 && active
+                        ? "3px solid #10b981"
+                        : window.innerWidth >= 768
+                          ? "3px solid transparent"
+                          : "none",
+                  }}
+                >
                   <span style={{ fontSize: 15 }}>{icon}</span>
                   {label}
                 </div>
@@ -840,13 +1295,67 @@ export default function Dashboard() {
             })}
           </div>
 
-          <div className="ihsg-widget" style={{ padding: "16px", background: "linear-gradient(135deg,rgba(16,185,129,.12),rgba(8,145,178,.08))", borderRadius: 14, border: "1px solid rgba(16,185,129,.2)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#10b981", animation: "pulse-dot 1.5s infinite", display: "inline-block" }} />
-              <span style={{ fontSize: 9, color: "#10b981", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase" }}>IHSG Live</span>
+          <div
+            className="ihsg-widget"
+            style={{
+              padding: "16px",
+              background:
+                "linear-gradient(135deg,rgba(16,185,129,.12),rgba(8,145,178,.08))",
+              borderRadius: 14,
+              border: "1px solid rgba(16,185,129,.2)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                marginBottom: 8,
+              }}
+            >
+              <span
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: "50%",
+                  background: "#10b981",
+                  animation: "pulse-dot 1.5s infinite",
+                  display: "inline-block",
+                }}
+              />
+              <span
+                style={{
+                  fontSize: 9,
+                  color: "#10b981",
+                  fontWeight: 700,
+                  letterSpacing: "1.5px",
+                  textTransform: "uppercase",
+                }}
+              >
+                IHSG Live
+              </span>
             </div>
-            <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 26, fontWeight: 800, color: "#fff", lineHeight: 1 }}>{ihsg.formatted}</div>
-            <div style={{ fontSize: 13, color: ihsg.up ? "#10b981" : "#ef4444", fontWeight: 700, marginTop: 4 }}>{ihsg.up ? "▲" : "▼"} {ihsg.change_str}</div>
+            <div
+              style={{
+                fontFamily: "'Syne',sans-serif",
+                fontSize: 26,
+                fontWeight: 800,
+                color: "#fff",
+                lineHeight: 1,
+              }}
+            >
+              {ihsg.formatted}
+            </div>
+            <div
+              style={{
+                fontSize: 13,
+                color: ihsg.up ? "#10b981" : "#ef4444",
+                fontWeight: 700,
+                marginTop: 4,
+              }}
+            >
+              {ihsg.up ? "▲" : "▼"} {ihsg.change_str}
+            </div>
           </div>
         </aside>
 
@@ -859,39 +1368,200 @@ export default function Dashboard() {
             <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
               <div className="header-row fade-up">
                 <div>
-                  <h1 style={{ fontFamily: "'Syne',sans-serif", fontSize: 24, fontWeight: 800, color: "#0f172a", margin: 0, letterSpacing: "-0.5px" }}>Market Overview</h1>
-                  <p style={{ color: "#64748b", fontSize: 13, margin: "3px 0 0" }}>
-                    {getTodayId()} {loadingData && <span style={{ color: "#10b981", fontWeight: 600 }}>⟳ Memuat...</span>}
+                  <h1
+                    style={{
+                      fontFamily: "'Syne',sans-serif",
+                      fontSize: 24,
+                      fontWeight: 800,
+                      color: "#0f172a",
+                      margin: 0,
+                      letterSpacing: "-0.5px",
+                    }}
+                  >
+                    Market Overview
+                  </h1>
+                  <p
+                    style={{
+                      color: "#64748b",
+                      fontSize: 13,
+                      margin: "3px 0 0",
+                    }}
+                  >
+                    {getTodayId()}{" "}
+                    {loadingData && (
+                      <span style={{ color: "#10b981", fontWeight: 600 }}>
+                        ⟳ Memuat...
+                      </span>
+                    )}
                   </p>
                 </div>
                 <div className="header-actions">
-                  <div className="search-container" style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                    <div style={{ display: "flex", background: "#fff", borderRadius: 12, border: `1.5px solid ${searchError ? "#ef4444" : "#e2e8f0"}`, overflow: "hidden", flex: 1 }}>
-                      <input className="search-input" value={ticker} onChange={(e) => { setTicker(e.target.value.toUpperCase()); setSearchError(""); }} onKeyDown={(e) => e.key === "Enter" && handleSearch()} placeholder="Cari saham... (Cth: GOTO)" style={{ border: "none", outline: "none", padding: "10px 14px", fontSize: 13, background: "transparent", color: "#0f172a", fontFamily: "inherit" }} />
-                      <button className="btn-green" onClick={handleSearch} style={{ background: "#10b981", color: "#fff", border: "none", padding: "10px 20px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Cari</button>
+                  <div
+                    className="search-container"
+                    style={{ display: "flex", gap: 10, alignItems: "center" }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        background: "#fff",
+                        borderRadius: 12,
+                        border: `1.5px solid ${searchError ? "#ef4444" : "#e2e8f0"}`,
+                        overflow: "hidden",
+                        flex: 1,
+                      }}
+                    >
+                      <input
+                        className="search-input"
+                        value={ticker}
+                        onChange={(e) => {
+                          setTicker(e.target.value.toUpperCase());
+                          setSearchError("");
+                        }}
+                        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                        placeholder="Cari saham... (Cth: GOTO)"
+                        style={{
+                          border: "none",
+                          outline: "none",
+                          padding: "10px 14px",
+                          fontSize: 13,
+                          background: "transparent",
+                          color: "#0f172a",
+                          fontFamily: "inherit",
+                        }}
+                      />
+                      <button
+                        className="btn-green"
+                        onClick={handleSearch}
+                        style={{
+                          background: "#10b981",
+                          color: "#fff",
+                          border: "none",
+                          padding: "10px 20px",
+                          fontWeight: 700,
+                          fontSize: 13,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Cari
+                      </button>
                     </div>
                   </div>
-                  {searchError && <div style={{ fontSize: 11, color: "#ef4444", fontWeight: 600, background: "#fee2e2", padding: "4px 12px", borderRadius: 8 }}>⚠️ {searchError}</div>}
+                  {searchError && (
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#ef4444",
+                        fontWeight: 600,
+                        background: "#fee2e2",
+                        padding: "4px 12px",
+                        borderRadius: 8,
+                      }}
+                    >
+                      ⚠️ {searchError}
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Insight Harian */}
-              <div className="fade-up-1" style={{ borderRadius: 20, padding: "22px 24px", background: "linear-gradient(135deg,#080f1e 0%,#0c1f3f 60%,#0a2540 100%)", border: "1px solid #1e3a5f", position: "relative", overflow: "hidden" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18, position: "relative", zIndex: 2 }}>
+              <div
+                className="fade-up-1"
+                style={{
+                  borderRadius: 20,
+                  padding: "22px 24px",
+                  background:
+                    "linear-gradient(135deg,#080f1e 0%,#0c1f3f 60%,#0a2540 100%)",
+                  border: "1px solid #1e3a5f",
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 18,
+                    position: "relative",
+                    zIndex: 2,
+                  }}
+                >
                   <span style={{ fontSize: 18 }}>✨</span>
-                  <span style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 15, color: "#10b981" }}>Insight Harian</span>
+                  <span
+                    style={{
+                      fontFamily: "'Syne',sans-serif",
+                      fontWeight: 800,
+                      fontSize: 15,
+                      color: "#10b981",
+                    }}
+                  >
+                    Insight Harian
+                  </span>
                 </div>
-                <div className="insight-grid" style={{ position: "relative", zIndex: 2 }}>
+                <div
+                  className="insight-grid"
+                  style={{ position: "relative", zIndex: 2 }}
+                >
                   {[
-                    { icon: "📊", label: "Sentimen Dominan", value: insight.dominant, sub: insight.dominant_sub, color: "#10b981" },
-                    { icon: "👀", label: "Saham Diamati", value: insight.watchlist, sub: insight.watchlist_sub, color: "#38bdf8" },
-                    { icon: "⚡", label: "Perlu Diperhatikan", value: insight.attention, sub: insight.attention_sub, color: "#f59e0b" },
+                    {
+                      icon: "📊",
+                      label: "Sentimen Dominan",
+                      value: insight.dominant,
+                      sub: insight.dominant_sub,
+                      color: "#10b981",
+                    },
+                    {
+                      icon: "👀",
+                      label: "Saham Diamati",
+                      value: insight.watchlist,
+                      sub: insight.watchlist_sub,
+                      color: "#38bdf8",
+                    },
+                    {
+                      icon: "⚡",
+                      label: "Perlu Diperhatikan",
+                      value: insight.attention,
+                      sub: insight.attention_sub,
+                      color: "#f59e0b",
+                    },
                   ].map((item) => (
-                    <div key={item.label} style={{ background: "rgba(255,255,255,.04)", borderRadius: 14, padding: "16px 18px", borderLeft: `3px solid ${item.color}` }}>
-                      <div style={{ fontSize: 20, marginBottom: 8 }}>{item.icon}</div>
-                      <div style={{ fontSize: 10, color: "#475569", textTransform: "uppercase", fontWeight: 600 }}>{item.label}</div>
-                      <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 17, color: item.color }}>{item.value}</div>
-                      <div style={{ fontSize: 11, color: "#64748b", marginTop: 5 }}>{item.sub}</div>
+                    <div
+                      key={item.label}
+                      style={{
+                        background: "rgba(255,255,255,.04)",
+                        borderRadius: 14,
+                        padding: "16px 18px",
+                        borderLeft: `3px solid ${item.color}`,
+                      }}
+                    >
+                      <div style={{ fontSize: 20, marginBottom: 8 }}>
+                        {item.icon}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 10,
+                          color: "#475569",
+                          textTransform: "uppercase",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {item.label}
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: "'Syne',sans-serif",
+                          fontWeight: 800,
+                          fontSize: 17,
+                          color: item.color,
+                        }}
+                      >
+                        {item.value}
+                      </div>
+                      <div
+                        style={{ fontSize: 11, color: "#64748b", marginTop: 5 }}
+                      >
+                        {item.sub}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -900,14 +1570,52 @@ export default function Dashboard() {
               {/* Stock Tabs */}
               <div className="stock-tabs fade-up-2">
                 {stocks.map((s) => (
-                  <div key={s.ticker} className="stock-tab" onClick={() => setActiveStock(s.ticker)} style={{ background: activeStock === s.ticker ? "#0f172a" : "#fff", color: activeStock === s.ticker ? "#fff" : "#0f172a", border: `1.5px solid ${activeStock === s.ticker ? "#10b981" : "#e2e8f0"}`, borderRadius: 16, padding: "13px 16px", cursor: "pointer", display: "flex", gap: 14, alignItems: "center", minWidth: 185 }}>
+                  <div
+                    key={s.ticker}
+                    className="stock-tab"
+                    onClick={() => setActiveStock(s.ticker)}
+                    style={{
+                      background: activeStock === s.ticker ? "#0f172a" : "#fff",
+                      color: activeStock === s.ticker ? "#fff" : "#0f172a",
+                      border: `1.5px solid ${activeStock === s.ticker ? "#10b981" : "#e2e8f0"}`,
+                      borderRadius: 16,
+                      padding: "13px 16px",
+                      cursor: "pointer",
+                      display: "flex",
+                      gap: 14,
+                      alignItems: "center",
+                      minWidth: 185,
+                    }}
+                  >
                     <div>
-                      <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 15 }}>{s.ticker}</div>
-                      <div style={{ fontSize: 10, opacity: 0.5, fontWeight: 500 }}>{s.sector}</div>
+                      <div
+                        style={{
+                          fontFamily: "'Syne',sans-serif",
+                          fontWeight: 800,
+                          fontSize: 15,
+                        }}
+                      >
+                        {s.ticker}
+                      </div>
+                      <div
+                        style={{ fontSize: 10, opacity: 0.5, fontWeight: 500 }}
+                      >
+                        {s.sector}
+                      </div>
                     </div>
                     <div style={{ marginLeft: "auto", textAlign: "right" }}>
-                      <div style={{ fontWeight: 700, fontSize: 13 }}>Rp {s.price}</div>
-                      <div style={{ fontSize: 12, color: s.up ? "#10b981" : "#ef4444", fontWeight: 700 }}>{s.change}</div>
+                      <div style={{ fontWeight: 700, fontSize: 13 }}>
+                        Rp {s.price}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 12,
+                          color: s.up ? "#10b981" : "#ef4444",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {s.change}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -916,20 +1624,677 @@ export default function Dashboard() {
               {/* Metric Cards */}
               <div className="grid-4 fade-up-3">
                 {[
-                  { label: "Skor Sentimen", value: `${stock.sentiment}%`, sub: stock.label, color: sentColor, icon: "😊" },
-                  { label: "Prediksi Arah", value: stock.prediction, sub: "Estimasi AI", color: stock.predColor, icon: stock.prediction === "Naik" ? "📈" : stock.prediction === "Turun" ? "📉" : "➡️" },
-                  { label: "Harga Saat Ini", value: `Rp ${stock.price}`, sub: stock.change + " hari ini", color: stock.up ? "#10b981" : "#ef4444", icon: "💰" },
-                  { label: "Sektor", value: stock.sector, sub: activeStock, color: "#7c3aed", icon: "🏭" },
+                  {
+                    label: "Skor Sentimen",
+                    value: `${stock.sentiment}%`,
+                    sub: stock.label,
+                    color: sentColor,
+                    icon: "😊",
+                  },
+                  {
+                    label: "Prediksi Arah",
+                    value: stock.prediction,
+                    sub: "Estimasi AI",
+                    color: stock.predColor,
+                    icon:
+                      stock.prediction === "Naik"
+                        ? "📈"
+                        : stock.prediction === "Turun"
+                          ? "📉"
+                          : "➡️",
+                  },
+                  {
+                    label: "Harga Saat Ini",
+                    value: `Rp ${stock.price}`,
+                    sub: stock.change + " hari ini",
+                    color: stock.up ? "#10b981" : "#ef4444",
+                    icon: "💰",
+                  },
+                  {
+                    label: "Sektor",
+                    value: stock.sector,
+                    sub: activeStock,
+                    color: "#7c3aed",
+                    icon: "🏭",
+                  },
                 ].map((m) => (
-                  <div key={m.label} className="card-hover" style={{ background: "#fff", borderRadius: 18, padding: "20px", borderTop: `3px solid ${m.color}`, boxShadow: "0 1px 4px rgba(0,0,0,.07)" }}>
-                    <div style={{ fontSize: 24, marginBottom: 10 }}>{m.icon}</div>
-                    <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 22, fontWeight: 800, color: "#0f172a" }}>{m.value}</div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: m.color, marginTop: 3 }}>{m.sub}</div>
-                    <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 5, fontWeight: 500 }}>{m.label}</div>
+                  <div
+                    key={m.label}
+                    className="card-hover"
+                    style={{
+                      background: "#fff",
+                      borderRadius: 18,
+                      padding: "20px",
+                      borderTop: `3px solid ${m.color}`,
+                      boxShadow: "0 1px 4px rgba(0,0,0,.07)",
+                    }}
+                  >
+                    <div style={{ fontSize: 24, marginBottom: 10 }}>
+                      {m.icon}
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: "'Syne',sans-serif",
+                        fontSize: 22,
+                        fontWeight: 800,
+                        color: "#0f172a",
+                      }}
+                    >
+                      {m.value}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: m.color,
+                        marginTop: 3,
+                      }}
+                    >
+                      {m.sub}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#94a3b8",
+                        marginTop: 5,
+                        fontWeight: 500,
+                      }}
+                    >
+                      {m.label}
+                    </div>
                   </div>
                 ))}
               </div>
 
               {/* Charts Row */}
               <div className="grid-chart fade-up-4">
-                <div style={{ background:
+                <div
+                  style={{
+                    background: "#fff",
+                    borderRadius: 20,
+                    padding: "22px 24px",
+                    boxShadow: "0 1px 4px rgba(0,0,0,.07)",
+                    minWidth: 0,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      marginBottom: 18,
+                    }}
+                  >
+                    <div>
+                      <div
+                        style={{
+                          fontFamily: "'Syne',sans-serif",
+                          fontWeight: 800,
+                          fontSize: 15,
+                          color: "#0f172a",
+                        }}
+                      >
+                        Pergerakan {activeStock}
+                      </div>
+                      <div
+                        style={{ fontSize: 12, color: "#94a3b8", marginTop: 3 }}
+                      >
+                        8 bulan terakhir
+                      </div>
+                    </div>
+                  </div>
+                  <ResponsiveContainer width="100%" height={170}>
+                    <AreaChart data={priceData[activeStock] || []}>
+                      <defs>
+                        <linearGradient id="pg" x1="0" y1="0" x2="0" y2="1">
+                          <stop
+                            offset="5%"
+                            stopColor={stock.up ? "#10b981" : "#ef4444"}
+                            stopOpacity={0.18}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor={stock.up ? "#10b981" : "#ef4444"}
+                            stopOpacity={0}
+                          />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                      <XAxis
+                        dataKey="date"
+                        tick={{ fontSize: 11, fill: "#94a3b8" }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 11, fill: "#94a3b8" }}
+                        axisLine={false}
+                        tickLine={false}
+                        width={35}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Area
+                        type="monotone"
+                        dataKey="price"
+                        stroke={stock.up ? "#10b981" : "#ef4444"}
+                        strokeWidth={2.5}
+                        fill="url(#pg)"
+                        dot={{
+                          r: 3,
+                          fill: stock.up ? "#10b981" : "#ef4444",
+                          strokeWidth: 0,
+                        }}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div
+                  style={{
+                    background: "#fff",
+                    borderRadius: 20,
+                    padding: "22px 24px",
+                    boxShadow: "0 1px 4px rgba(0,0,0,.07)",
+                    minWidth: 0,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: "'Syne',sans-serif",
+                      fontWeight: 800,
+                      fontSize: 15,
+                      color: "#0f172a",
+                      marginBottom: 3,
+                    }}
+                  >
+                    Tren Sentimen
+                  </div>
+                  <div
+                    style={{ fontSize: 12, color: "#94a3b8", marginBottom: 16 }}
+                  >
+                    7 hari terakhir
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 14,
+                      marginBottom: 20,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 70,
+                        height: 70,
+                        borderRadius: "50%",
+                        background: `conic-gradient(${sentColor} 0% ${stock.sentiment}%, #e2e8f0 ${stock.sentiment}% 100%)`,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 50,
+                          height: 50,
+                          borderRadius: "50%",
+                          background: "#fff",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontFamily: "'Syne',sans-serif",
+                          fontWeight: 900,
+                          fontSize: 14,
+                        }}
+                      >
+                        {stock.sentiment}%
+                      </div>
+                    </div>
+                    <div>
+                      <div
+                        style={{
+                          fontFamily: "'Syne',sans-serif",
+                          fontWeight: 800,
+                          fontSize: 17,
+                          color: sentColor,
+                        }}
+                      >
+                        {stock.label}
+                      </div>
+                      <div style={{ fontSize: 11, color: "#94a3b8" }}>
+                        Rata-rata sentimen pasar
+                      </div>
+                    </div>
+                  </div>
+                  <ResponsiveContainer width="100%" height={72}>
+                    <BarChart data={sentimentHistory} barSize={13}>
+                      <XAxis
+                        dataKey="day"
+                        tick={{ fontSize: 10, fill: "#94a3b8" }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <Bar
+                        dataKey="score"
+                        fill={sentColor}
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* ════ BERITA PAGE ════ */}
+          {activePage === "news" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+              <div className="fade-up">
+                <h1
+                  style={{
+                    fontFamily: "'Syne',sans-serif",
+                    fontSize: 24,
+                    fontWeight: 800,
+                    color: "#0f172a",
+                    margin: 0,
+                  }}
+                >
+                  📰 Berita Pasar
+                </h1>
+                <p
+                  style={{ color: "#64748b", fontSize: 13, margin: "4px 0 0" }}
+                >
+                  Update & analisis sentimen hari ini
+                </p>
+              </div>
+
+              <div
+                className="fade-up-1"
+                style={{ display: "flex", flexDirection: "column", gap: 10 }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    alignItems: "center",
+                    overflowX: "auto",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 11,
+                      color: "#94a3b8",
+                      fontWeight: 600,
+                      minWidth: 50,
+                    }}
+                  >
+                    Saham:
+                  </span>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "nowrap" }}>
+                    {stocks.map((s) => (
+                      <button
+                        key={s.ticker}
+                        onClick={() => setStockFilter(s.ticker)}
+                        style={{
+                          padding: "7px 16px",
+                          borderRadius: 10,
+                          border: `1.5px solid ${stockFilter === s.ticker ? "#10b981" : "#e2e8f0"}`,
+                          background:
+                            stockFilter === s.ticker ? "#0f172a" : "#fff",
+                          color: stockFilter === s.ticker ? "#fff" : "#0f172a",
+                          fontWeight: 700,
+                          fontSize: 13,
+                          cursor: "pointer",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {s.ticker}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    alignItems: "center",
+                    overflowX: "auto",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 11,
+                      color: "#94a3b8",
+                      fontWeight: 600,
+                      minWidth: 50,
+                    }}
+                  >
+                    Filter:
+                  </span>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "nowrap" }}>
+                    {[
+                      {
+                        label: "Semua",
+                        color: "#0f172a",
+                        bg: "#f1f5f9",
+                        border: "#e2e8f0",
+                      },
+                      {
+                        label: "Positif",
+                        color: "#15803d",
+                        bg: "#dcfce7",
+                        border: "#bbf7d0",
+                      },
+                      {
+                        label: "Negatif",
+                        color: "#dc2626",
+                        bg: "#fee2e2",
+                        border: "#fecaca",
+                      },
+                      {
+                        label: "Netral",
+                        color: "#475569",
+                        bg: "#f1f5f9",
+                        border: "#e2e8f0",
+                      },
+                    ].map((f) => (
+                      <button
+                        key={f.label}
+                        onClick={() => setSentimentFilter(f.label)}
+                        className={
+                          sentimentFilter === f.label ? "filter-btn-active" : ""
+                        }
+                        style={{
+                          padding: "7px 16px",
+                          borderRadius: 10,
+                          border: `1.5px solid ${f.border}`,
+                          background: f.bg,
+                          color: f.color,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {f.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid-2 fade-up-3">
+                {stocks
+                  .filter(
+                    (s) => s.ticker === stockFilter || stockFilter === "Semua",
+                  )
+                  .map((s) => (
+                    <div
+                      key={s.ticker}
+                      style={{
+                        background: "#fff",
+                        borderRadius: 20,
+                        padding: "22px 24px",
+                        boxShadow: "0 1px 4px rgba(0,0,0,.07)",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          marginBottom: 16,
+                          paddingBottom: 14,
+                          borderBottom: "1px solid #f1f5f9",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            flex: 1,
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: 44,
+                              height: 44,
+                              borderRadius: 12,
+                              flexShrink: 0,
+                              background: s.up
+                                ? "linear-gradient(135deg,#dcfce7,#bbf7d0)"
+                                : "linear-gradient(135deg,#fee2e2,#fecaca)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontFamily: "'Syne',sans-serif",
+                              fontWeight: 900,
+                              fontSize: 11,
+                              color: s.up ? "#15803d" : "#dc2626",
+                            }}
+                          >
+                            {s.ticker}
+                          </div>
+                          <div>
+                            <div
+                              style={{
+                                fontFamily: "'Syne',sans-serif",
+                                fontWeight: 800,
+                                fontSize: 13,
+                              }}
+                            >
+                              {s.name}
+                            </div>
+                            <div style={{ fontSize: 11, color: "#94a3b8" }}>
+                              {s.sector}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 8,
+                        }}
+                      >
+                        {newsForStock.length === 0 ? (
+                          <div
+                            style={{
+                              fontSize: 12,
+                              color: "#94a3b8",
+                              textAlign: "center",
+                              padding: 10,
+                            }}
+                          >
+                            Belum ada berita sesuai filter
+                          </div>
+                        ) : (
+                          newsForStock.map((n, i) => (
+                            <div
+                              key={i}
+                              className="news-row"
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                padding: "10px 12px",
+                                borderRadius: 10,
+                                background: "#f8fafc",
+                                border: "1px solid #f1f5f9",
+                                cursor: "pointer",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 8,
+                                  flex: 1,
+                                  paddingRight: 8,
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    width: 6,
+                                    height: 6,
+                                    borderRadius: "50%",
+                                    background: n.dot,
+                                    flexShrink: 0,
+                                  }}
+                                />
+                                <span
+                                  style={{
+                                    fontSize: 12,
+                                    color: "#334155",
+                                    lineHeight: 1.4,
+                                  }}
+                                >
+                                  {n.title}
+                                </span>
+                              </div>
+                              <span
+                                style={{
+                                  fontSize: 10,
+                                  fontWeight: 700,
+                                  padding: "2px 8px",
+                                  borderRadius: 20,
+                                  background: n.bg,
+                                  color: n.tc,
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {n.tag}
+                              </span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {/* ════ EDUKASI PAGE ════ */}
+          {activePage === "edukasi" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+              <div className="fade-up">
+                <h1
+                  style={{
+                    fontFamily: "'Syne',sans-serif",
+                    fontSize: 24,
+                    fontWeight: 800,
+                    color: "#0f172a",
+                    margin: 0,
+                  }}
+                >
+                  🎓 Pusat Edukasi
+                </h1>
+                <p
+                  style={{ color: "#64748b", fontSize: 13, margin: "4px 0 0" }}
+                >
+                  Pahami cara kerja FinSight
+                </p>
+              </div>
+              <div className="grid-2 fade-up-2">
+                {eduContent.map((edu) => (
+                  <div
+                    key={edu.title}
+                    className="card-hover"
+                    style={{
+                      background: "#fff",
+                      borderRadius: 20,
+                      padding: "22px 24px",
+                      boxShadow: "0 1px 4px rgba(0,0,0,.07)",
+                      borderTop: `3px solid ${edu.color}`,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        marginBottom: 14,
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: 14,
+                          background: edu.bg,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: 22,
+                        }}
+                      >
+                        {edu.icon}
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: "'Syne',sans-serif",
+                          fontWeight: 800,
+                          fontSize: 15,
+                        }}
+                      >
+                        {edu.title}
+                      </div>
+                    </div>
+                    <p
+                      style={{
+                        fontSize: 13,
+                        color: "#475569",
+                        lineHeight: 1.75,
+                        margin: "0 0 16px",
+                      }}
+                    >
+                      {edu.body}
+                    </p>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 8,
+                      }}
+                    >
+                      {edu.tips.map((tip, i) => (
+                        <div
+                          key={i}
+                          style={{
+                            display: "flex",
+                            gap: 8,
+                            alignItems: "flex-start",
+                            fontSize: 12,
+                            color: "#64748b",
+                            background: "#f8fafc",
+                            padding: "9px 12px",
+                            borderRadius: 10,
+                            border: "1px solid #f1f5f9",
+                          }}
+                        >
+                          <span
+                            style={{
+                              color: edu.color,
+                              fontWeight: 800,
+                              flexShrink: 0,
+                            }}
+                          >
+                            →
+                          </span>
+                          <span style={{ lineHeight: 1.5 }}>{tip}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+    </>
+  );
+}
