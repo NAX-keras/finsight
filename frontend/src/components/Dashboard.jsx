@@ -2293,6 +2293,7 @@ export default function Dashboard() {
               </div>
             </div>
           )}
+          {activePage === "settings" && <SettingsPage stocks={stocks} />}
         </main>
       </div>
     </>
