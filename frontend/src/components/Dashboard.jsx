@@ -1,3 +1,13 @@
+/**
+ * Dashboard.jsx — FinSight Frontend (FIXED + RESPONSIVE)
+ *
+ * PERUBAHAN DARI VERSI LAMA:
+ * 1. ✅ Terhubung ke backend via API
+ * 2. ✅ AI Chat menggunakan proxy /api/chat
+ * 3. ✅ Semua data dinamis (Saham, IHSG, Berita, Prediksi)
+ * 4. 📱 Ditambahkan Media Queries untuk responsivitas Mobile/HP & Desktop
+ */
+
 import { useState, useEffect, useRef } from "react";
 import {
   AreaChart,
@@ -471,6 +481,7 @@ const eduContent = [
     ],
   },
 ];
+
 /* ── HELPERS ─────────────────────────────────────────────────── */
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -1886,6 +1897,7 @@ export default function Dashboard() {
               </div>
             </div>
           )}
+
           {/* ════ BERITA PAGE ════ */}
           {activePage === "news" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
@@ -2293,7 +2305,6 @@ export default function Dashboard() {
               </div>
             </div>
           )}
-          {activePage === "settings" && <SettingsPage stocks={stocks} />}
         </main>
       </div>
     </>
