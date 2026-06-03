@@ -1,14 +1,13 @@
-// src/pages/AIPage.jsx
 import { useState, useEffect, useRef } from "react";
+import { API_BASE, HAS_BACKEND } from "../services/apiClient";
 
-const API_BASE = import.meta.env.VITE_API_URL || "";
-const HAS_BACKEND = API_BASE.length > 0;
+/* ── AI CHAT PAGE ────────────────────────────────────────────── */
 const AI_SYSTEM = `Kamu adalah FinSight AI, asisten cerdas untuk platform analisis sentimen saham FinSight.`;
 const QUICK_CHIPS = [
   "Apa sentimen BBRI?",
   "Jelaskan Bullish",
   "Tips pemula",
-  "Kenapa GOTO turun?",
+  "Bagaimana prospek TLKM?",
 ];
 
 export default function AIPage() {

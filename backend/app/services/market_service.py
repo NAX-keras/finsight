@@ -13,34 +13,32 @@ CHANGELOG v3 (Optimasi Performa & Pencegahan Rate-Limit Ekstrim):
 import time
 import random
 import math
+import os
 import requests
 import pandas as pd
 import yfinance as yf
 from app.models.db_models import Stock
+from app.data.fallback_dataset import STOCK_DATA, FALLBACK_IHSG
 from app.core.logging_config import get_logger
 
 logger = get_logger(__name__)
 
 # ── Konfigurasi ───────────────────────────────────────────────────────────────
-MAX_RETRY         = 3     # jumlah maksimal percobaan per request
-RETRY_BASE_DELAY = 3.0   # detik (dikali nomor attempt: 3s, 6s, 9s + jitter)
-PRE_REQUEST_DELAY = 1.5  # delay wajib sebelum request ke Yahoo Finance
-REQUEST_TIMEOUT   = 15    # detik timeout per request
+MAX_RETRY         = 1     # cepat fallback jika Yahoo/yfinance limit/error
+RETRY_BASE_DELAY = 1.0   # detik
+PRE_REQUEST_DELAY = 0.2  # delay pendek sebelum request
+REQUEST_TIMEOUT   = 5    # detik timeout per request
+ENABLE_YFINANCE   = os.getenv("ENABLE_YFINANCE", "true").lower() in {"1", "true", "yes", "y"}
 
-# ── Fallback data statis jika API Yahoo lumpuh total ──────────────────────────
+# ── Fallback data statis dari dataset upload ────────────────────────────────
+# Dipakai ketika Yahoo/yfinance error, kosong, atau terkena rate limit.
 FALLBACK_PRICE: dict[str, dict] = {
-    "BBRI": {"price": 5100.0, "change_percent":  2.3, "is_up": True},
-    "TLKM": {"price": 3870.0, "change_percent":  0.8, "is_up": True},
-    "GOTO": {"price":   68.0, "change_percent": -1.4, "is_up": False},
-    "ASII": {"price": 4450.0, "change_percent":  0.5, "is_up": True},
-}
-
-FALLBACK_IHSG: dict = {
-    "value":      7412.0,
-    "formatted":  "7.412",
-    "change":     0.64,
-    "change_str": "+0.64%",
-    "up":         True,
+    ticker: {
+        "price": data["current_price"],
+        "change_percent": data["change_percent"],
+        "is_up": data["is_up"],
+    }
+    for ticker, data in STOCK_DATA.items()
 }
 
 # ── Internal Helpers ──────────────────────────────────────────────────────────
@@ -76,8 +74,11 @@ def _call_history(ticker_obj, period: str, interval: str):
 
 
 def _fetch_history(symbol: str, period: str = "5d", interval: str = "1d") -> pd.DataFrame | None:
-    """Fetch history untuk SINGLE ticker dengan backoff + jitter."""
-    time.sleep(PRE_REQUEST_DELAY + random.uniform(0, 0.5))
+    """Fetch history untuk SINGLE ticker dengan fallback cepat."""
+    if not ENABLE_YFINANCE:
+        logger.info(f"[{symbol}] yfinance dinonaktifkan via ENABLE_YFINANCE=false; pakai fallback dataset.")
+        return None
+    time.sleep(PRE_REQUEST_DELAY + random.uniform(0, 0.2))
 
     for attempt in range(1, MAX_RETRY + 1):
         try:
@@ -109,6 +110,9 @@ def _fetch_batch_data(tickers: list[str], period: str, interval: str) -> dict[st
     """
     if not tickers:
         return {}
+    if not ENABLE_YFINANCE:
+        logger.info("yfinance dinonaktifkan via ENABLE_YFINANCE=false; batch memakai fallback dataset.")
+        return {}
 
     # Konversi ke format Yahoo (.JK) jika emiten IDX, skip jika indeks seperti ^JKSE
     symbol_map = {f"{t}.JK" if not t.startswith('^') else t: t for t in tickers}
@@ -119,14 +123,16 @@ def _fetch_batch_data(tickers: list[str], period: str, interval: str) -> dict[st
 
     for attempt in range(1, MAX_RETRY + 1):
         try:
-            # Unduh masal menggunakan yf.download
+            # Unduh masal menggunakan yf.download DENGAN TOPENG SESSION
+            session = _build_session()
             df = yf.download(
                 tickers=symbols_str,
                 period=period,
                 interval=interval,
                 group_by='ticker',  # Struktur data rapi dikelompokkan per ticker
                 timeout=REQUEST_TIMEOUT,
-                progress=False
+                progress=False,
+                session=session
             )
 
             if df.empty:
@@ -207,7 +213,7 @@ def get_price_history(ticker: str, months: int = 8) -> list:
     hist = _fetch_history(symbol, period=f"{months}mo", interval="1mo")
 
     if hist is None or hist.empty:
-        return []
+        return STOCK_DATA.get(ticker, {}).get("price_history", [])
 
     result = []
     for idx, row in hist.iterrows():

@@ -104,7 +104,7 @@ class ChatBlock(BaseModel):
 
 
 class ChatResponse(BaseModel):
-    """Anthropic-compatible response — dipakai oleh sendChatMessage() di api.js."""
+    """Gemini-compatible response — dipakai oleh frontend AI Chat."""
     content: List[ChatBlock]
     session_id: Optional[str] = None  # [NEW] Kembalikan ID sesi ke frontend
 

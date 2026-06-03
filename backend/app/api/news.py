@@ -3,24 +3,34 @@ from typing import Any, Dict, List
 from fastapi import APIRouter
 from app.core.dependencies import DbSession
 from app.services.news_service import get_all_news
+from app.data.fallback_dataset import FALLBACK_NEWS
 from app.core.logging_config import get_logger
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/news", tags=["News"])
 
 _FALLBACK = [
-    {"title":"BBRI catat laba bersih Rp 12,7T, melampaui ekspektasi analis","tag":"Positive","stock":"BBRI"},
-    {"title":"GOTO masih dalam tekanan jual asing minggu ini","tag":"Negative","stock":"GOTO"},
-    {"title":"Pasar konsolidasi jelang keputusan suku bunga The Fed","tag":"Neutral","stock":"IHSG"},
-    {"title":"TLKM ekspansi layanan 5G di 12 kota baru di Sumatra","tag":"Positive","stock":"TLKM"},
-    {"title":"ASII: penjualan kendaraan semester I tumbuh 8% YoY","tag":"Positive","stock":"ASII"},
+    {
+        "title": item.get("title", ""),
+        "content": item.get("content", item.get("title", "")),
+        "summary": item.get("content", item.get("title", "")),
+        "tag": item.get("tag", "Neutral"),
+        "stock": item.get("ticker", "IHSG"),
+        "source": item.get("source", "FinSight Dataset"),
+        "url": item.get("url", ""),
+        "published_at": item.get("published_at", ""),
+    }
+    for item in FALLBACK_NEWS
+    if item.get("ticker") != "GOTO"
 ]
+
 
 @router.get("", summary="Berita pasar terbaru")
 async def list_news(db: DbSession) -> List[Dict[str, Any]]:
-    """Return [{title, tag, stock}] — cocok dengan fetchNews() di api.js."""
+    """Return [{title, tag, stock}] — cocok dengan frontend."""
     try:
-        return get_all_news(db, limit=20)
+        data = get_all_news(db, limit=80)
+        return data or _FALLBACK
     except Exception as e:
-        logger.warning(f"Gagal ambil berita dari DB: {e}")
+        logger.warning(f"Gagal ambil berita dari DB, gunakan fallback dataset: {e}")
         return _FALLBACK

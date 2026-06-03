@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   AreaChart,
   Area,
@@ -40,37 +40,7 @@ export default function Dashboard() {
   const [loadingData, setLoadingData] = useState(false);
 
   const [sentimentFilter, setSentimentFilter] = useState("Semua");
-  const [stockFilter, setStockFilter] = useState("ALL");
-  const [selectedNewsDetail, setSelectedNewsDetail] = useState(null);
-  const [dataSource, setDataSource] = useState(
-    HAS_BACKEND ? "Menghubungkan backend" : "Fallback dummy",
-  );
-  const [highlightedStock, setHighlightedStock] = useState("");
-  const stockRefs = useRef({});
-
-  const [watchlist, setWatchlist] = useState(() => {
-    const initial = Object.fromEntries(FB_STOCKS.map((s) => [s.ticker, true]));
-    try {
-      const saved = localStorage.getItem("finsight_watchlist");
-      return saved ? { ...initial, ...JSON.parse(saved) } : initial;
-    } catch {
-      return initial;
-    }
-  });
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("finsight_watchlist", JSON.stringify(watchlist));
-    } catch {
-      // localStorage bisa tidak tersedia di beberapa environment.
-    }
-  }, [watchlist]);
-
-  const watchedStocks = useMemo(
-    () => stocks.filter((s) => watchlist[s.ticker] !== false),
-    [stocks, watchlist],
-  );
-  const displayStocks = watchedStocks.length ? watchedStocks : stocks;
+  const [stockFilter, setStockFilter] = useState("BBRI");
 
   useEffect(() => {
     if (!HAS_BACKEND) return;
@@ -86,33 +56,16 @@ export default function Dashboard() {
         ]);
 
       if (apiStocks && Object.keys(apiStocks).length > 0) {
-        setDataSource("Backend aktif");
-        const allowedTickers = FB_STOCKS.map((s) => s.ticker);
-        const apiStocksFiltered = Object.fromEntries(
-          Object.entries(apiStocks).filter(
-            ([ticker]) => ticker !== "GOTO" && allowedTickers.includes(ticker),
-          ),
-        );
-        const apiMapped = mapApiToStocksArray(apiStocksFiltered);
-        const mergedStocks = FB_STOCKS.map(
-          (fallbackStock) =>
-            apiMapped.find((apiStock) => apiStock.ticker === fallbackStock.ticker) ||
-            fallbackStock,
-        );
-        const tickers = mergedStocks.map((s) => s.ticker);
-        setStocks(mergedStocks);
-        setPriceData({ ...FB_PRICE, ...mapApiToPriceData(apiStocksFiltered) });
-        setNewsData({ ...FB_NEWS, ...mapApiToNewsDict(apiNews || [], tickers) });
-        setStockFilter((prev) => (prev === "ALL" || tickers.includes(prev) ? prev : "ALL"));
-        setActiveStock((prev) => (tickers.includes(prev) ? prev : tickers[0] || "BBRI"));
+        const tickers = Object.keys(apiStocks);
+        setStocks(mapApiToStocksArray(apiStocks));
+        setPriceData(mapApiToPriceData(apiStocks));
+        setNewsData(mapApiToNewsDict(apiNews || [], tickers));
+        setStockFilter(tickers[0] || "BBRI");
       }
       if (apiSentHist && apiSentHist.length > 0)
         setSentimentHistory(apiSentHist);
       if (apiInsight) setInsight(apiInsight);
       if (apiIhsg) setIhsg(apiIhsg);
-      if (!apiStocks || Object.keys(apiStocks).length === 0) {
-        setDataSource("Fallback dummy");
-      }
       setLoadingData(false);
     })();
   }, []);
@@ -141,39 +94,12 @@ export default function Dashboard() {
     })();
   }, [activeStock]);
 
-  useEffect(() => {
-    if (!displayStocks.some((s) => s.ticker === activeStock) && displayStocks[0]) {
-      setActiveStock(displayStocks[0].ticker);
-    }
-    if (stockFilter !== "ALL" && !displayStocks.some((s) => s.ticker === stockFilter)) {
-      setStockFilter("ALL");
-    }
-  }, [displayStocks, activeStock, stockFilter]);
-
-  useEffect(() => {
-    if (activePage !== "dashboard" || !activeStock) return undefined;
-    const timer = setTimeout(() => {
-      const card = stockRefs.current[activeStock];
-      if (card) {
-        card.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-        setHighlightedStock(activeStock);
-      }
-    }, 80);
-    const clearTimer = setTimeout(() => setHighlightedStock(""), 1800);
-    return () => {
-      clearTimeout(timer);
-      clearTimeout(clearTimer);
-    };
-  }, [activeStock, activePage, displayStocks.length]);
-
   const handleSearch = () => {
     const val = ticker.trim().toUpperCase();
     if (!val) return;
     const found = stocks.find((s) => s.ticker === val);
     if (found) {
-      setWatchlist((prev) => ({ ...prev, [found.ticker]: true }));
       setActiveStock(found.ticker);
-      setHighlightedStock(found.ticker);
       setActivePage("dashboard");
       setTicker("");
       setSearchError("");
@@ -199,25 +125,11 @@ export default function Dashboard() {
         ? "↓"
         : "→";
 
-  const allNewsFlat = displayStocks.flatMap((s) =>
-    (newsData[s.ticker] || []).map((n, index) => ({
-      ...n,
-      id: `${s.ticker}-${index}`,
-      ticker: s.ticker,
-      stockName: s.name,
-      sector: s.sector,
-      price: s.price,
-      change: s.change,
-      up: s.up,
-    })),
+  const newsForStock = (newsData[stockFilter] || []).filter(
+    (n) => sentimentFilter === "Semua" || n.tag === sentimentFilter,
   );
-  const filteredNews = allNewsFlat.filter(
-    (n) =>
-      (stockFilter === "ALL" || n.ticker === stockFilter) &&
-      (sentimentFilter === "Semua" || n.tag === sentimentFilter),
-  );
-  const selectedNewsStock = stockFilter === "ALL" ? null : stocks.find((s) => s.ticker === stockFilter);
-  const selectedNews = filteredNews;
+
+  const allNewsFlat = Object.values(newsData).flat();
   const newsTotal = allNewsFlat.length;
   const newsPositif = allNewsFlat.filter((n) => n.tag === "Positif").length;
   const newsNegatif = allNewsFlat.filter((n) => n.tag === "Negatif").length;
@@ -395,14 +307,7 @@ export default function Dashboard() {
         {/* ── MAIN CONTENT ── */}
         <main className="main-content">
           {activePage === "ai" && <AIPage />}
-          {activePage === "settings" && (
-            <SettingsPage
-              stocks={stocks}
-              watchlist={watchlist}
-              setWatchlist={setWatchlist}
-              dataSource={dataSource}
-            />
-          )}
+          {activePage === "settings" && <SettingsPage stocks={stocks} />}
 
           {/* ════ DASHBOARD PAGE ════ */}
           {activePage === "dashboard" && (
@@ -434,30 +339,6 @@ export default function Dashboard() {
                         ⟳ Memuat...
                       </span>
                     )}
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 5,
-                        marginLeft: 10,
-                        padding: "4px 9px",
-                        borderRadius: 999,
-                        background: dataSource === "Backend aktif" ? "#dcfce7" : "#fef3c7",
-                        color: dataSource === "Backend aktif" ? "#15803d" : "#b45309",
-                        fontSize: 11,
-                        fontWeight: 800,
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: 6,
-                          height: 6,
-                          borderRadius: "50%",
-                          background: dataSource === "Backend aktif" ? "#22c55e" : "#f59e0b",
-                        }}
-                      />
-                      {dataSource}
-                    </span>
                   </p>
                 </div>
                 <div className="header-actions">
@@ -634,133 +515,56 @@ export default function Dashboard() {
 
               {/* Stock Tabs */}
               <div className="stock-tabs fade-up-2">
-                {displayStocks.map((s) => {
-                  const isActive = activeStock === s.ticker;
-                  const badgeTheme =
-                    s.prediction === "Naik"
-                      ? {
-                          bg: isActive ? "rgba(16,185,129,.18)" : "#dcfce7",
-                          border: isActive ? "rgba(16,185,129,.35)" : "#bbf7d0",
-                          text: "#10b981",
-                          icon: "↑",
-                        }
-                      : s.prediction === "Turun"
-                        ? {
-                            bg: isActive ? "rgba(239,68,68,.16)" : "#fee2e2",
-                            border: isActive ? "rgba(248,113,113,.28)" : "#fecaca",
-                            text: "#ef4444",
-                            icon: "↓",
-                          }
-                        : {
-                            bg: isActive ? "rgba(245,158,11,.18)" : "#fef3c7",
-                            border: isActive ? "rgba(251,191,36,.30)" : "#fde68a",
-                            text: "#d97706",
-                            icon: "→",
-                          };
-
-                  return (
-                    <div
-                      key={s.ticker}
-                      ref={(el) => {
-                        stockRefs.current[s.ticker] = el;
-                      }}
-                      className={`stock-tab ${highlightedStock === s.ticker ? "stock-tab-highlight" : ""}`}
-                      onClick={() => setActiveStock(s.ticker)}
-                      style={{
-                        background: isActive
-                          ? "linear-gradient(135deg,#0f172a,#111f36)"
-                          : "#fff",
-                        color: isActive ? "#fff" : "#0f172a",
-                        border: 
-                                                                              `1.5px solid ${isActive ? "#10b981" : "#e2e8f0"}`,
-                        borderRadius: 18,
-                        padding: "14px 16px",
-                        cursor: "pointer",
-                        display: "flex",
-                        gap: 14,
-                        alignItems: "center",
-                        minWidth: 270,
-                        justifyContent: "space-between",
-                        boxShadow: isActive
-                          ? "0 12px 26px rgba(15,23,42,.22)"
-                          : "0 2px 8px rgba(15,23,42,.06)",
-                      }}
-                    >
-                      <div style={{ minWidth: 0 }}>
-                        <div
-                          style={{
-                            fontFamily: "'Syne',sans-serif",
-                            fontWeight: 800,
-                            fontSize: 16,
-                            lineHeight: 1.1,
-                            marginBottom: 6,
-                          }}
-                        >
-                          {s.ticker}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: 11,
-                            color: isActive ? "rgba(255,255,255,.70)" : "#64748b",
-                            fontWeight: 500,
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            maxWidth: 95,
-                          }}
-                        >
-                          {s.sector}
-                        </div>
-                      </div>
-
-                      <div style={{ textAlign: "left", minWidth: 74 }}>
-                        <div
-                          style={{
-                            fontWeight: 700,
-                            fontSize: 13,
-                            marginBottom: 4,
-                            color: isActive ? "#f8fafc" : "#0f172a",
-                          }}
-                        >
-                          Rp {s.price}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: 12,
-                            color: s.up ? "#10b981" : "#ef4444",
-                            fontWeight: 700,
-                          }}
-                        >
-                          {s.change}
-                        </div>
-                      </div>
-
+                {stocks.map((s) => (
+                  <div
+                    key={s.ticker}
+                    className="stock-tab"
+                    onClick={() => setActiveStock(s.ticker)}
+                    style={{
+                      background: activeStock === s.ticker ? "#0f172a" : "#fff",
+                      color: activeStock === s.ticker ? "#fff" : "#0f172a",
+                      border: `1.5px solid ${activeStock === s.ticker ? "#10b981" : "#e2e8f0"}`,
+                      borderRadius: 16,
+                      padding: "13px 16px",
+                      cursor: "pointer",
+                      display: "flex",
+                      gap: 14,
+                      alignItems: "center",
+                      minWidth: 185,
+                    }}
+                  >
+                    <div>
                       <div
                         style={{
-                          padding: "9px 12px",
-                          borderRadius: 999,
-                          fontSize: 12,
-                          fontWeight: 700,
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 5,
-                          background: badgeTheme.bg,
-                          color: badgeTheme.text,
-                          border: `1px solid ${badgeTheme.border}`,
-                          boxShadow: isActive
-                            ? "inset 0 1px 0 rgba(255,255,255,.06)"
-                            : "none",
-                          flexShrink: 0,
+                          fontFamily: "'Syne',sans-serif",
+                          fontWeight: 800,
+                          fontSize: 15,
                         }}
                       >
-                        <span style={{ fontSize: 12, lineHeight: 1 }}>
-                          {badgeTheme.icon}
-                        </span>
-                        <span>{s.prediction}</span>
+                        {s.ticker}
+                      </div>
+                      <div
+                        style={{ fontSize: 10, opacity: 0.5, fontWeight: 500 }}
+                      >
+                        {s.sector}
                       </div>
                     </div>
-                  );
-                })}
+                    <div style={{ marginLeft: "auto", textAlign: "right" }}>
+                      <div style={{ fontWeight: 700, fontSize: 13 }}>
+                        Rp {s.price}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 12,
+                          color: s.up ? "#10b981" : "#ef4444",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {s.change}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* Metric Cards */}
@@ -1046,7 +850,7 @@ export default function Dashboard() {
                 <p
                   style={{ color: "#64748b", fontSize: 13, margin: "4px 0 0" }}
                 >
-                  Berita terkini dan analisis sentimen per saham — Senin, 12 Mei 2025
+                  Update & analisis sentimen hari ini
                 </p>
               </div>
 
@@ -1073,23 +877,7 @@ export default function Dashboard() {
                     Saham:
                   </span>
                   <div style={{ display: "flex", gap: 8, flexWrap: "nowrap" }}>
-                    <button
-                      onClick={() => setStockFilter("ALL")}
-                      style={{
-                        padding: "7px 16px",
-                        borderRadius: 10,
-                        border: `1.5px solid ${stockFilter === "ALL" ? "#10b981" : "#e2e8f0"}`,
-                        background: stockFilter === "ALL" ? "#0f172a" : "#fff",
-                        color: stockFilter === "ALL" ? "#fff" : "#0f172a",
-                        fontWeight: 700,
-                        fontSize: 13,
-                        cursor: "pointer",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      Semua
-                    </button>
-                    {displayStocks.map((s) => (
+                    {stocks.map((s) => (
                       <button
                         key={s.ticker}
                         onClick={() => setStockFilter(s.ticker)}
@@ -1181,168 +969,19 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="grid-4 fade-up-2">
-                {[
-                  { icon: "📋", value: newsTotal, sub: `${displayStocks.length} saham watchlist`, label: "Total Berita", color: "#0891b2" },
-                  { icon: "📈", value: newsPositif, sub: `${newsTotal ? Math.round((newsPositif / newsTotal) * 100) : 0}% dari total`, label: "Sentimen Positif", color: "#10b981" },
-                  { icon: "📉", value: newsNegatif, sub: `${newsTotal ? Math.round((newsNegatif / newsTotal) * 100) : 0}% dari total`, label: "Sentimen Negatif", color: "#ef4444" },
-                  { icon: "➖", value: newsNetral, sub: `${newsTotal ? Math.round((newsNetral / newsTotal) * 100) : 0}% dari total`, label: "Sentimen Netral", color: "#64748b" },
-                ].map((m) => (
-                  <div
-                    key={m.label}
-                    className="card-hover"
-                    style={{
-                      background: "#fff",
-                      borderRadius: 18,
-                      padding: "22px 24px",
-                      borderTop: `3px solid ${m.color}`,
-                      boxShadow: "0 1px 4px rgba(0,0,0,.07)",
-                    }}
-                  >
-                    <div style={{ fontSize: 20, marginBottom: 16 }}>{m.icon}</div>
+              <div className="grid-2 fade-up-3">
+                {stocks
+                  .filter(
+                    (s) => s.ticker === stockFilter || stockFilter === "Semua",
+                  )
+                  .map((s) => (
                     <div
-                      style={{
-                        fontFamily: "'Syne',sans-serif",
-                        fontSize: 26,
-                        fontWeight: 800,
-                        color: "#0f172a",
-                        lineHeight: 1,
-                      }}
-                    >
-                      {m.value}
-                    </div>
-                    <div style={{ fontSize: 12, color: m.color, fontWeight: 800, marginTop: 8 }}>
-                      {m.sub}
-                    </div>
-                    <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 5 }}>
-                      {m.label}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div
-                className="fade-up-3"
-                style={{
-                  background: "#fff",
-                  borderRadius: 18,
-                  padding: "16px 18px",
-                  boxShadow: "0 1px 4px rgba(0,0,0,.07)",
-                  border: "1px solid #e2e8f0",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: 12,
-                  flexWrap: "wrap",
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: 12, color: "#94a3b8", fontWeight: 700 }}>
-                    Hasil filter aktif
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: "'Syne',sans-serif",
-                      fontSize: 17,
-                      fontWeight: 800,
-                      color: "#0f172a",
-                      marginTop: 3,
-                    }}
-                  >
-                    {stockFilter === "ALL" ? "Menampilkan semua berita watchlist" : `Menampilkan berita untuk: ${selectedNewsStock?.ticker || "-"}`}
-                  </div>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 8,
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <span
-                    style={{
-                      padding: "7px 12px",
-                      borderRadius: 999,
-                      background: "#f0fdf4",
-                      color: "#15803d",
-                      fontSize: 12,
-                      fontWeight: 800,
-                    }}
-                  >
-                    {stockFilter === "ALL" ? "Saham: Semua" : `Saham: ${selectedNewsStock?.ticker || "-"}`}
-                  </span>
-                  <span
-                    style={{
-                      padding: "7px 12px",
-                      borderRadius: 999,
-                      background: "#f8fafc",
-                      color: "#475569",
-                      fontSize: 12,
-                      fontWeight: 800,
-                    }}
-                  >
-                    Filter: {sentimentFilter}
-                  </span>
-                  <span
-                    style={{
-                      padding: "7px 12px",
-                      borderRadius: 999,
-                      background: "#eff6ff",
-                      color: "#1d4ed8",
-                      fontSize: 12,
-                      fontWeight: 800,
-                    }}
-                  >
-                    {selectedNews.length} berita ditemukan
-                  </span>
-                </div>
-              </div>
-
-              {selectedNews.length === 0 ? (
-                <div
-                  className="fade-up-4"
-                  style={{
-                    background: "#fff",
-                    borderRadius: 20,
-                    padding: "34px 24px",
-                    textAlign: "center",
-                    border: "1px dashed #cbd5e1",
-                    boxShadow: "0 1px 4px rgba(0,0,0,.05)",
-                  }}
-                >
-                  <div style={{ fontSize: 28, marginBottom: 10 }}>🗞️</div>
-                  <div
-                    style={{
-                      fontFamily: "'Syne',sans-serif",
-                      fontSize: 18,
-                      fontWeight: 800,
-                      color: "#0f172a",
-                    }}
-                  >
-                    Belum ada berita yang cocok
-                  </div>
-                  <p style={{ color: "#64748b", fontSize: 13, marginTop: 8 }}>
-                    Belum ada berita {sentimentFilter} untuk {stockFilter === "ALL" ? "watchlist" : stockFilter}. Coba pilih filter Semua atau saham lain.
-                  </p>
-                </div>
-              ) : (
-                <div className="grid-2 fade-up-4">
-                  {selectedNews.map((n) => (
-                    <button
-                      key={n.id}
-                      type="button"
-                      onClick={() => setSelectedNewsDetail(n)}
-                      className="card-hover news-row"
+                      key={s.ticker}
                       style={{
                         background: "#fff",
                         borderRadius: 20,
-                        padding: "20px 22px",
+                        padding: "22px 24px",
                         boxShadow: "0 1px 4px rgba(0,0,0,.07)",
-                        border: "1px solid #e2e8f0",
-                        cursor: "pointer",
-                        textAlign: "left",
-                        fontFamily: "inherit",
                       }}
                     >
                       <div
@@ -1350,20 +989,26 @@ export default function Dashboard() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "space-between",
-                          gap: 14,
-                          marginBottom: 14,
+                          marginBottom: 16,
                           paddingBottom: 14,
                           borderBottom: "1px solid #f1f5f9",
                         }}
                       >
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            flex: 1,
+                          }}
+                        >
                           <div
                             style={{
                               width: 44,
                               height: 44,
                               borderRadius: 12,
                               flexShrink: 0,
-                              background: n.up
+                              background: s.up
                                 ? "linear-gradient(135deg,#dcfce7,#bbf7d0)"
                                 : "linear-gradient(135deg,#fee2e2,#fecaca)",
                               display: "flex",
@@ -1372,315 +1017,113 @@ export default function Dashboard() {
                               fontFamily: "'Syne',sans-serif",
                               fontWeight: 900,
                               fontSize: 11,
-                              color: n.up ? "#15803d" : "#dc2626",
+                              color: s.up ? "#15803d" : "#dc2626",
                             }}
                           >
-                            {n.ticker}
+                            {s.ticker}
                           </div>
-                          <div style={{ minWidth: 0 }}>
+                          <div>
                             <div
                               style={{
                                 fontFamily: "'Syne',sans-serif",
                                 fontWeight: 800,
-                                fontSize: 14,
-                                color: "#0f172a",
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                maxWidth: 260,
+                                fontSize: 13,
                               }}
                             >
-                              {n.stockName}
+                              {s.name}
                             </div>
-                            <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 3 }}>
-                              {n.sector}
+                            <div style={{ fontSize: 11, color: "#94a3b8" }}>
+                              {s.sector}
                             </div>
-                          </div>
-                        </div>
-                        <div style={{ textAlign: "right", flexShrink: 0 }}>
-                          <div style={{ fontWeight: 800, fontSize: 14, color: "#0f172a" }}>
-                            Rp {n.price}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 800,
-                              color: n.up ? "#10b981" : "#ef4444",
-                              marginTop: 3,
-                            }}
-                          >
-                            {n.change}
                           </div>
                         </div>
                       </div>
-
                       <div
                         style={{
                           display: "flex",
-                          alignItems: "flex-start",
-                          gap: 10,
+                          flexDirection: "column",
+                          gap: 8,
                         }}
                       >
-                        <span
-                          style={{
-                            width: 7,
-                            height: 7,
-                            borderRadius: "50%",
-                            background: n.dot,
-                            flexShrink: 0,
-                            marginTop: 8,
-                          }}
-                        />
-                        <div style={{ flex: 1, minWidth: 0 }}>
+                        {newsForStock.length === 0 ? (
                           <div
                             style={{
-                              fontSize: 13,
-                              color: "#334155",
-                              lineHeight: 1.55,
-                              display: "-webkit-box",
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: "vertical",
-                              overflow: "hidden",
+                              fontSize: 12,
+                              color: "#94a3b8",
+                              textAlign: "center",
+                              padding: 10,
                             }}
                           >
-                            {n.title}
+                            Belum ada berita sesuai filter
                           </div>
-                          <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 10 }}>
-                            Klik untuk lihat detail berita
-                          </div>
-                        </div>
-                        <span
-                          style={{
-                            fontSize: 11,
-                            fontWeight: 800,
-                            padding: "5px 10px",
-                            borderRadius: 999,
-                            background: n.bg,
-                            color: n.tc,
-                            whiteSpace: "nowrap",
-                            flexShrink: 0,
-                          }}
-                        >
-                          {n.tag}
-                        </span>
+                        ) : (
+                          newsForStock.map((n, i) => (
+                            <div
+                              key={i}
+                              className="news-row"
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                padding: "10px 12px",
+                                borderRadius: 10,
+                                background: "#f8fafc",
+                                border: "1px solid #f1f5f9",
+                                cursor: "pointer",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 8,
+                                  flex: 1,
+                                  paddingRight: 8,
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    width: 6,
+                                    height: 6,
+                                    borderRadius: "50%",
+                                    background: n.dot,
+                                    flexShrink: 0,
+                                  }}
+                                />
+                                <span
+                                  style={{
+                                    fontSize: 12,
+                                    color: "#334155",
+                                    lineHeight: 1.4,
+                                  }}
+                                >
+                                  {n.title}
+                                </span>
+                              </div>
+                              <span
+                                style={{
+                                  fontSize: 10,
+                                  fontWeight: 700,
+                                  padding: "2px 8px",
+                                  borderRadius: 20,
+                                  background: n.bg,
+                                  color: n.tc,
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {n.tag}
+                              </span>
+                            </div>
+                          ))
+                        )}
                       </div>
-                    </button>
+                    </div>
                   ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ════ EDUKASI PAGE ════ */}
-
-
-          {selectedNewsDetail && (
-            <div
-              onClick={() => setSelectedNewsDetail(null)}
-              style={{
-                position: "fixed",
-                inset: 0,
-                background: "rgba(15,23,42,.58)",
-                zIndex: 100,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: 18,
-                backdropFilter: "blur(4px)",
-              }}
-            >
-              <div
-                onClick={(e) => e.stopPropagation()}
-                style={{
-                  width: "min(680px, 100%)",
-                  maxHeight: "86vh",
-                  overflowY: "auto",
-                  background: "#fff",
-                  borderRadius: 24,
-                  padding: "24px 26px",
-                  boxShadow: "0 24px 80px rgba(15,23,42,.30)",
-                  border: "1px solid rgba(226,232,240,.8)",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    justifyContent: "space-between",
-                    gap: 14,
-                    marginBottom: 18,
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div
-                      style={{
-                        width: 50,
-                        height: 50,
-                        borderRadius: 14,
-                        background: selectedNewsDetail.up
-                          ? "linear-gradient(135deg,#dcfce7,#bbf7d0)"
-                          : "linear-gradient(135deg,#fee2e2,#fecaca)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontFamily: "'Syne',sans-serif",
-                        fontWeight: 900,
-                        fontSize: 12,
-                        color: selectedNewsDetail.up ? "#15803d" : "#dc2626",
-                        flexShrink: 0,
-                      }}
-                    >
-                      {selectedNewsDetail.ticker}
-                    </div>
-                    <div>
-                      <div
-                        style={{
-                          fontFamily: "'Syne',sans-serif",
-                          fontSize: 18,
-                          fontWeight: 800,
-                          color: "#0f172a",
-                        }}
-                      >
-                        Detail Berita {selectedNewsDetail.ticker}
-                      </div>
-                      <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>
-                        {selectedNewsDetail.stockName} • {selectedNewsDetail.sector}
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedNewsDetail(null)}
-                    style={{
-                      width: 34,
-                      height: 34,
-                      borderRadius: 999,
-                      border: "1px solid #e2e8f0",
-                      background: "#f8fafc",
-                      color: "#475569",
-                      cursor: "pointer",
-                      fontWeight: 900,
-                      fontSize: 16,
-                    }}
-                  >
-                    ×
-                  </button>
-                </div>
-
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: 8,
-                    marginBottom: 18,
-                  }}
-                >
-                  <span
-                    style={{
-                      padding: "7px 12px",
-                      borderRadius: 999,
-                      background: selectedNewsDetail.bg,
-                      color: selectedNewsDetail.tc,
-                      fontSize: 12,
-                      fontWeight: 800,
-                    }}
-                  >
-                    Sentimen: {selectedNewsDetail.tag}
-                  </span>
-                  <span
-                    style={{
-                      padding: "7px 12px",
-                      borderRadius: 999,
-                      background: "#f8fafc",
-                      color: "#475569",
-                      fontSize: 12,
-                      fontWeight: 800,
-                    }}
-                  >
-                    Harga: Rp {selectedNewsDetail.price}
-                  </span>
-                  <span
-                    style={{
-                      padding: "7px 12px",
-                      borderRadius: 999,
-                      background: selectedNewsDetail.up ? "#f0fdf4" : "#fef2f2",
-                      color: selectedNewsDetail.up ? "#15803d" : "#dc2626",
-                      fontSize: 12,
-                      fontWeight: 800,
-                    }}
-                  >
-                    Perubahan: {selectedNewsDetail.change}
-                  </span>
-                </div>
-
-                <div
-                  style={{
-                    background: "#f8fafc",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: 18,
-                    padding: "18px 20px",
-                    marginBottom: 16,
-                  }}
-                >
-                  <div style={{ fontSize: 12, color: "#94a3b8", fontWeight: 800, marginBottom: 8 }}>
-                    Isi berita lengkap
-                  </div>
-                  <p
-                    style={{
-                      fontSize: 15,
-                      color: "#334155",
-                      lineHeight: 1.8,
-                      margin: 0,
-                      whiteSpace: "pre-line",
-                    }}
-                  >
-                    {selectedNewsDetail.content || selectedNewsDetail.title}
-                  </p>
-                  {(selectedNewsDetail.source || selectedNewsDetail.publishedAt || selectedNewsDetail.url) && (
-                    <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid #e2e8f0" }}>
-                      {selectedNewsDetail.source && (
-                        <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700 }}>
-                          Sumber: {selectedNewsDetail.source}
-                        </div>
-                      )}
-                      {selectedNewsDetail.publishedAt && (
-                        <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 4 }}>
-                          Waktu: {selectedNewsDetail.publishedAt}
-                        </div>
-                      )}
-                      {selectedNewsDetail.url && (
-                        <a
-                          href={selectedNewsDetail.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{ display: "inline-block", fontSize: 11, color: "#0891b2", fontWeight: 800, marginTop: 8, textDecoration: "none" }}
-                        >
-                          Buka sumber asli ↗
-                        </a>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <div
-                  style={{
-                    background: "#fff7ed",
-                    border: "1px solid #fed7aa",
-                    borderRadius: 18,
-                    padding: "16px 18px",
-                  }}
-                >
-                  <div style={{ fontSize: 12, color: "#9a3412", fontWeight: 900, marginBottom: 7 }}>
-                    Keterangan analisis sentimen
-                  </div>
-                  <p style={{ fontSize: 13, color: "#7c2d12", lineHeight: 1.7, margin: 0 }}>
-                    Terindikasi {String(selectedNewsDetail.tag || "netral").toLowerCase()} berdasarkan kata kunci dan konteks berita.
-                  </p>
-                </div>
               </div>
             </div>
           )}
 
+          {/* ════ EDUKASI PAGE ════ */}
           {activePage === "edukasi" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
               <div className="fade-up">
