@@ -74,13 +74,17 @@ def _build_stock_context(db, user_prompt: str) -> str:
             .all()
         )
         news_text = "; ".join([f"[{n.tag}] {n.title}" for n in recent_news]) or "belum ada berita spesifik"
-        lines.append(
+        
+        # PERBAIKAN: Memisahkan pembentukan string sebelum melakukan .replace()
+        stock_text = (
             f"- {s.ticker} ({s.company_name}, sektor {s.sector}): "
             f"harga Rp {d['price']:,.0f}, perubahan {'+' if d['up'] else '-'}{d['change']:.2f}%, "
             f"sentimen {_label_id(d['sentiment'])} ({d['sentimentScore']:.1f}/100), "
             f"sinyal {_signal_id(d['prediction'])} ({d['prediction']}), confidence {d['confidence']:.1f}%, "
             f"alasan: {', '.join(d['reasons'][:3])}; berita: {news_text}."
         ).replace(",", ".")
+        
+        lines.append(stock_text)
 
     if not tickers and len(rows) > len(selected_rows):
         lines.append(f"- Total saham dipantau: {len(rows)}. Ticker: {', '.join(TOP15_TICKERS)}.")
@@ -187,5 +191,4 @@ async def chat_with_gemini(req: ChatRequest, db: DbSession) -> ChatResponse:
         except Exception as e:
             db.rollback()
             logger.warning(f"Gagal menyimpan chat history ke DB: {e}")
-
     return ChatResponse(content=blocks, session_id=generated_session_id)
