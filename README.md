@@ -60,17 +60,16 @@ Buka terminal kedua dan masuk ke folder frontend:
 
 Bash
 cd frontend
-1. Instal dependensi NPM
 
+1. Instal dependensi NPM
 Bash
 npm install
+
 2. Konfigurasi Environment Variables
 Pastikan file .env di folder frontend sudah mengarah ke backend lokal Anda. File .env harus berisi:
-
-Plaintext
 VITE_API_URL=http://localhost:8000/api
-3. Jalankan server pengembangan Frontend
 
+3. Jalankan server pengembangan Frontend
 Bash
 npm run dev
 Frontend sekarang dapat diakses melalui link yang muncul di terminal (biasanya http://localhost:5173).
